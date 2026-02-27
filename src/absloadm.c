@@ -1,94 +1,94 @@
-/*компиляция используя -lncurses
-например, gcc absgraph.c -o absgraph -lncurses
+/*compile using -lncurses
+for example, gcc absgraph.c -o absgraph -lncurses
 */
-#include <stdio.h>                                /*подкл.библ.ф-й ст.в/выв */
-#include <string.h>                               /*подкл.библ.ф-й стр.симв.*/
-#include <stdlib.h>                               /*подкл.библ.ф-й преобр.д.*/
-#include <ctype.h>                                /*подкл.библ.ф-й преобр.с.*/
+#include <stdio.h>                                /*incl.lib.func. std.i/o  */
+#include <string.h>                               /*incl.lib.func. str.char.*/
+#include <stdlib.h>                               /*incl.lib.func. conv.d.  */
+#include <ctype.h>                                /*incl.lib.func. conv.c.  */
 #include <curses.h>
 
-#define  NSPIS  5                                 /*разм.списка загр.прогр. */
-#define  NOBJ   50                                /*разм.масс.об'ектных карт*/
-#define  DOBLZ  1024                              /*длина области загрузки  */
-#define  NOP 6                                    /*кол-во обрабатываемых   */
-						  /* команд                 */
+#define  NSPIS  5                                 /*size of load prog.list  */
+#define  NOBJ   50                                /*size of array obj.cards */
+#define  DOBLZ  1024                              /*length of load area     */
+#define  NOP 6                                    /*number of processed     */
+						  /* commands               */
 
 
 char NFIL [30] = "\x0";
 
-int  IOBJC   = 0;                                 /*инд.вакантн.стр. OBJCARD*/
-char OBJCARD [NOBJ][80];                          /*масс.хранен.об'ектн.карт*/
+int  IOBJC   = 0;                                 /*index of free row OBJCARD*/
+char OBJCARD [NOBJ][80];                          /*array stor. object cards*/
 
-int  ISPIS   = 0;                                 /*инд.вакантн.стр. SPISOK */
-char SPISOK  [NSPIS][80];                         /*масс.хранен.списка прогр*/
+int  ISPIS   = 0;                                 /*index of free row SPISOK*/
+char SPISOK  [NSPIS][80];                         /*array stor. program list*/
 
 WINDOW *wblue, *wgreen, *wred, *wcyan, *wmargenta;
 
-struct STR_BUF_TXT                                /*структ.буфера карты TXT */
+struct STR_BUF_TXT                                /*struct of TXT card buff */
  {
-  unsigned char POLE1      ;                      /*место для кода 0x02     */
-  unsigned char POLE2  [ 3];                      /*поле типа об'ектн.карты */
-  unsigned char POLE3      ;                      /*пробел                  */
-  unsigned char ADOP   [ 3];                      /*относит.адрес опреации  */
-  unsigned char POLE5  [ 2];                      /*пробелы                 */
-  unsigned char DLNOP  [ 2];                      /*длина операции          */
-  unsigned char POLE7  [ 2];                      /*пробелы                 */
-  unsigned char POLE71 [ 2];                      /*внутренний идент.прогр. */
-  unsigned char OPER   [56];                      /*тело операции           */
-  unsigned char POLE9  [ 8];                      /*идентификационное поле  */
+  unsigned char POLE1      ;                      /*place for code 0x02     */
+  unsigned char POLE2  [ 3];                      /*field of object card type*/
+  unsigned char POLE3      ;                      /*space                   */
+  unsigned char ADOP   [ 3];                      /*relative addr of oper.  */
+  unsigned char POLE5  [ 2];                      /*spaces                  */
+  unsigned char DLNOP  [ 2];                      /*length of operation     */
+  unsigned char POLE7  [ 2];                      /*spaces                  */
+  unsigned char POLE71 [ 2];                      /*internal ident.of prog. */
+  unsigned char OPER   [56];                      /*body of operation       */
+  unsigned char POLE9  [ 8];                      /*identification field    */
  };
 
 
-union                                             /*определить об'единение  */
+union                                             /*define union            */
  {
-  struct STR_BUF_TXT STR_TXT;                     /*структура буфера        */
-  unsigned char BUF_TXT [80];                     /*буфер карты TXT         */
+  struct STR_BUF_TXT STR_TXT;                     /*buffer structure        */
+  unsigned char BUF_TXT [80];                     /*TXT card buffer         */
  } TXT;
 
 
-unsigned char INST [6];                           /*массив, содерж. обрабат.*/
-						  /*команду                 */
+unsigned char INST [6];                           /*array,cont. processed   */
+						  /*command                 */
 
 
 /*..........................................................................*/
-						  /*п р о т о т и п  обращ.к*/
-int FRR();                                        /*подпр.обр.опер.RR-форм. */
+						  /*p r o t o t y p e  for  */
+int FRR();                                        /*subr.proc. oper.RR-form.*/
 
 /*..........................................................................*/
 
-						  /*п р о т о т и п  обращ.к*/
-int FRX();                                        /*подпр.обр.опер.RX-форм. */
+						  /*p r o t o t y p e  for  */
+int FRX();                                        /*subr.proc. oper.RX-form.*/
 /*..........................................................................*/
 
 
-int X1 = 1;                                       /* инициализация коорд.   */
-int Y1 = 15;                                      /* на экране              */
-int R1,                                           /*номер 1-го регистра-опе-*/
-						  /*ранда в форматах RR и RX*/
-    R2,                                           /*номер 2-го регистра-опе-*/
-						  /*ранда в формате RX      */
-    D,                                            /*смещение в формате RX   */
-    X,                                            /*номер индексн. регистра */
-						  /*в формате RX            */
-    B;                                            /*номер базового регистра */
-						  /*в формате RX            */
-unsigned long I,                                  /*счетчик адр.тек.ком-ды  */
-	      BAS_ADDR,                           /*адрес начала обл.загруз.*/
-	      I1,ADDR,ARG,VS;                     /*вспомогательные перем.  */
-unsigned long VR[16],                             /*массив,содерж.знач.рег. */
-	      LIGHTPTR;                           /*адрес начала обл.отсвет.*/
+int X1 = 1;                                       /* init.coord.            */
+int Y1 = 15;                                      /* on screen              */
+int R1,                                           /*number 1-st reg-oper-   */
+						                                      /*rand in formatsRR and RX*/
+    R2,                                           /*number 2-nd reg-oper-   */
+						                                      /*rand in format RX       */
+    D,                                            /*displacement in formatRX*/
+    X,                                            /*number of index reg.    */
+						                                      /*in format RX            */
+    B;                                            /*number of base reg.     */
+						                                      /*in format RX            */
+unsigned long I,                                  /*cnterof addr.of curr.cmd*/
+	      BAS_ADDR,                                 /*adr.of strt of load area*/
+	      I1,ADDR,ARG,VS;                           /*auxiliary variables     */
+unsigned long VR[16],                             /*array,cont.reg.values   */
+	      LIGHTPTR;                                 /*addr.of start of hghligt*/
 
 
-int x,y,i,j,k,kk;                                 /*рабочие переменные      */
+int x,y,i,j,k,kk;                                 /*working variables       */
 
-int CUR_IND;                                      /*индекс масс.обл.загр.,  */
-						  /*соотв.текущ.ком-де прогр*/
-int BAS_IND;                                      /*индекс масс.обл.загр.,  */
-						  /*соотв.первой ком-ды прог*/
+int CUR_IND;                                      /*index of load array,    */
+						                                      /*corr.to curr.cmd of prog*/
+int BAS_IND;                                      /*index of load array,    */
+						                                      /*corr.to 1st cmd of prog.*/
 
-  union U1                                        /*постоянная часть шабло- */
-   {                                              /*на отсветки регистров на*/
-    struct                                        /*экране консоли          */
+  union U1                                        /*constant part of tmplate*/
+   {                                              /*for reg.highlight on    */
+    struct                                        /*console screen          */
      {
       char NOMREG  [ 3];
       char ZNEQUEL [1];
@@ -97,8 +97,8 @@ int BAS_IND;                                      /*индекс масс.обл
     char BUFR [16][4];
    }R_ASC;
 
-  union u2                                        /*шаблон для расчета      */
-   {                                              /*элементов абсолютного   */
+  union u2                                        /*template for calculation*/
+   {                                              /*of absolute elements    */
     struct
      {
       unsigned int SMESH;
@@ -107,29 +107,29 @@ int BAS_IND;                                      /*индекс масс.обл
    unsigned char *P_OBLZ ;
    } POINT;
 
-  unsigned char OBLZ [DOBLZ] ;                    /*область загрузки трас-  */
-						  /*сируемой программы      */
+  unsigned char OBLZ [DOBLZ] ;                    /*load area of traced     */
+						                                      /*program                 */
 /*
-***** ТАБЛИЦА машинных операций
+***** TABLE of machine operations
 */
 
- struct TMOP                                      /*структ.стр.табл.маш.опер*/
+ struct TMOP                                      /*strctof row mach.op.tble*/
   {
-   unsigned char MNCOP [5];                       /*мнемокод операции       */
-   unsigned char CODOP    ;                       /*машинный код операции   */
-   unsigned char DLOP     ;                       /*длина операции в байтах */
-   int (*BXPROG)()        ;                       /*указатель на подпр.обраб*/
-  } T_MOP [NOP]  =                                /*об'явление табл.маш.опер*/
+   unsigned char MNCOP [5];                       /*mnemonic code of op.    */
+   unsigned char CODOP    ;                       /*machine code of op.     */
+   unsigned char DLOP     ;                       /*length of op.in bytes   */
+   int (*BXPROG)()        ;                       /*pointer to subr.proc.   */
+  } T_MOP [NOP]  =                                /*decl.of mach.op.table   */
     {
-{{'B' , 'A' , 'L' , 'R' , ' '} , '\x05', 2 , FRR},/*инициализация           */
-{{'B' , 'C' , 'R' , ' ' , ' '} , '\x07', 2 , FRR}, /*строк                   */
-{{'S' , 'T' , ' ' , ' ' , ' '} , '\x50', 4 , FRX}, /*таблицы                 */
-{{'L' , ' ' , ' ' , ' ' , ' '} , '\x58', 4 , FRX}, /*машинных                */
-{{'A' , ' ' , ' ' , ' ' , ' '} , '\x5A', 4 , FRX}, /*операций                */
-{{'S' , ' ' , ' ' , ' ' , ' '} , '\x5B', 4 , FRX}, /*                        */
+{{'B' , 'A' , 'L' , 'R' , ' '} , '\x05', 2 , FRR},/*initialization          */
+{{'B' , 'C' , 'R' , ' ' , ' '} , '\x07', 2 , FRR},/*of rows                 */
+{{'S' , 'T' , ' ' , ' ' , ' '} , '\x50', 4 , FRX},/*of table                */
+{{'L' , ' ' , ' ' , ' ' , ' '} , '\x58', 4 , FRX},/*of machine              */
+{{'A' , ' ' , ' ' , ' ' , ' '} , '\x5A', 4 , FRX},/*of operations           */
+{{'S' , ' ' , ' ' , ' ' , ' '} , '\x5B', 4 , FRX},/*                        */
     };
 //..........................................................................
-//п р о г р а м м а реализации семантики команды BALR
+//p r o g r a m for implementing semantics of command BALR
 int P_BALR(void)
 {
   if (R2 != 0)
@@ -140,7 +140,7 @@ int P_BALR(void)
   return 0;
 }
 //..........................................................................
-//п р о г р а м м а реализации семантики команды BCR с маской 15
+//p r o g r a m for implementing semantics of command BCR with mask 15
 int P_BCR(void)
 {
   int ret;
@@ -155,7 +155,7 @@ int P_BCR(void)
     {
       if (R2 != 0)
       {
-        waddstr(wcyan, "переход по адресу = 0 или завершение трассировки программы после нажатия клавиши");
+        waddstr(wcyan, "jump to address = 0 or end prog.tracing after key press");
 	wrefresh(wcyan);
 	ret = 1;
       }
@@ -166,84 +166,84 @@ int P_BCR(void)
 }
 /*..........................................................................*/
 
-int P_ST()                                        /*  п р о г р а м м а     */
-						  /*реализации семантики    */
- {                                                /*команды ST              */
-  int sm,i;                                       /*рабочие                 */
-  char bytes[4];                                  /*переменные              */
+int P_ST()                                        /*  p r o g r a m         */
+						                                      /*for implmenting smantics*/
+ {                                                /*of command ST           */
+  int sm,i;                                       /*working                 */
+  char bytes[4];                                  /*variables               */
 
-  ADDR = VR[B] + VR[X] + D;                       /*вычисление абс.адреса и */
-  sm = (int) (ADDR -I);                           /*смещения                */
+  ADDR = VR[B] + VR[X] + D;                       /*calc.of abs.addr.and    */
+  sm = (int) (ADDR -I);                           /*displacement            */
 
-  bytes[0] = (VR[R1] -                            /*преобразование содержим.*/
-		VR[R1]% 0x1000000L)/0x1000000L;   /*РОН, использованного в  */
-  bytes[1] = ((VR[R1] -                           /*качестве первого оп-да, */
-		VR[R1]%0x10000L)/0x10000L)%0x100; /*к виду, принятому в     */
-  bytes[2] = ((VR[R1] % 0x10000L) -               /*ЕС ЭВМ                  */
-		((VR[R1]%0x10000L)%0x100))/0x100; /*                        */
+  bytes[0] = (VR[R1] -                            /*conversion of content   */
+		VR[R1]% 0x1000000L)/0x1000000L;               /*of RON,used as          */
+  bytes[1] = ((VR[R1] -                           /*1st operand,            */
+		VR[R1]%0x10000L)/0x10000L)%0x100;             /*to format accepted in   */
+  bytes[2] = ((VR[R1] % 0x10000L) -               /*ES EVM                  */
+		((VR[R1]%0x10000L)%0x100))/0x100;             /*                        */
   bytes[3] = (VR[R1] % 0x10000L) % 0x100;         /*                        */
 
-  for (i=0; i<4; i++)                             /*запись преобразованого  */
-   OBLZ[BAS_IND + CUR_IND + sm + i] = bytes[i];   /*значения по адресу 2-г  */
-						  /*операнда                */
-  return 0;                                       /*успешное заверш.прогр.  */
+  for (i=0; i<4; i++)                             /*writing of converted    */
+   OBLZ[BAS_IND + CUR_IND + sm + i] = bytes[i];   /*value to addr.of 2nd    */
+						                                      /*operand                 */
+  return 0;                                       /*successful prog.compl.  */
  }
 
 /*..........................................................................*/
 
-int P_L()                                         /*  п р о г р а м м а     */
-						  /*реализации семантики    */
- {                                                /*команды L               */
-   int sm;                                        /*рабочая переменная      */
+int P_L()                                         /*  p r o g r a m         */
+						  /*for implementing semantics*/
+ {                                                /*of command L            */
+   int sm;                                        /*working variable        */
 
-   ADDR = VR[B] + VR[X] + D;                      /*вычисление абс.адреса и */
-   sm = (int) ( ADDR - I );                       /*смещения                */
-   VR[R1] =                                       /*преобразование содержим.*/
-    OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L +   /*второго операнда к виду,*/
-    OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L + /*принятому в IBM PC, и   */
-    OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +    /*запись в РОН, использ.в */
-    OBLZ[BAS_IND + CUR_IND + sm + 3];             /*качестве 1-го операнда  */
+   ADDR = VR[B] + VR[X] + D;                      /*calc.of abs.addr.and    */
+   sm = (int) ( ADDR - I );                       /*displacement            */
+   VR[R1] =                                       /*conversion of content   */
+    OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L +   /*of 2nd operand to format*/
+    OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L + /*accepted in IBM PC,and  */
+    OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +    /*writing to RON,used as  */
+    OBLZ[BAS_IND + CUR_IND + sm + 3];             /*1st operand             */
 
-   return 0;                                      /*успешное заверш.прогр.  */
+   return 0;                                      /*successful prog.compl.  */
  }
 
 /*..........................................................................*/
 
-int P_A()                                         /*  п р о г р а м м а     */
-						  /*реализации семантики    */
- {                                                /*команды A               */
-  int sm;                                         /*рабочая переменная      */
+int P_A()                                         /*  p r o g r a m         */
+						                                      /*for implmenting semntics*/
+ {                                                /*of command A            */
+  int sm;                                         /*working variable        */
 
-  ADDR = VR[B] + VR[X] + D;                       /*вычисление абс.адреса и */
-  sm = ( int ) ( ADDR -I );                       /*смещения                */
-  ARG = OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L+/*формирование содержимого*/
-   OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L +  /*второго операнда в сог- */
-   OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +     /*лашениях ЕС ЭВМ         */
+  ADDR = VR[B] + VR[X] + D;                       /*calc.of abs.addr.and    */
+  sm = ( int ) ( ADDR -I );                       /*displacement            */
+  ARG = OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L+/*formation of content    */
+   OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L +  /*of 2nd operand in       */
+   OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +     /*ES EVM conventions      */
    OBLZ[BAS_IND + CUR_IND + sm + 3];              /*                        */
-						  /*и                       */
-  VR[R1] = VR[R1] + ARG;                          /*сложение с 1-м операндом*/
+						  /*and                     */
+  VR[R1] = VR[R1] + ARG;                          /*addtion with 1st operand*/
 
-  return 0;                                       /*успешное заверш. прогр. */
+  return 0;                                       /*successful prog.compl.  */
  }
 
 /*..........................................................................*/
 
-int P_S()                                         /* п р о г р а м м а      */
-						  /* реализации семантики   */
- {                                                /* команды S              */
-  int sm;                                         /*рабочая переменная      */
+int P_S()                                         /* p r o g r a m          */
+						  /* for implementing semantics*/
+ {                                                /* of command S           */
+  int sm;                                         /*working variable        */
 
-  ADDR = VR[B] + VR[X] + D;                       /*вычисление рабочего     */
-  sm = ( int ) ( ADDR - I );                      /*адреса и смещения       */
+  ADDR = VR[B] + VR[X] + D;                       /*calc.of working         */
+  sm = ( int ) ( ADDR - I );                      /*addr.and displacement   */
 
-  ARG = OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L+/*формирование содержимого*/
-     OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L +/*второго операнда в сог- */
-     OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +   /*лашениях ЕС ЭВМ         */
+  ARG = OBLZ[BAS_IND + CUR_IND + sm] * 0x1000000L+/*formation of content    */
+     OBLZ[BAS_IND + CUR_IND + sm + 1] * 0x10000L +/*of 2nd operand in       */
+     OBLZ[BAS_IND + CUR_IND + sm + 2] * 0x100 +   /*ES EVM conventions      */
      OBLZ[BAS_IND + CUR_IND + sm + 3];            /*                        */
-						  /* и                      */
-  VR[R1] = VR[R1] - ARG;                          /*выч-ие из 1-го операнда */
+						  /* and                    */
+  VR[R1] = VR[R1] - ARG;                          /*subtr.from 1st operand  */
 
-  return 0;                                       /*успешное заверш.прогр.  */
+  return 0;                                       /*successful prog.compl.  */
  }
 
 
@@ -361,8 +361,8 @@ int wind(void)
   return 0;
 }
 //---------------------------------------------------------------------------
-//программа покомандной интерпретпции(отладки)
-// загруженной программы
+//program for command-by-command interpretation(debugging)
+// of loaded program
 int sys(void) 			
 {
   int res, temp;
@@ -374,90 +374,90 @@ int sys(void)
   int zizi = 0, tempI;
   
   
-  I = BAS_ADDR;			//установить текущий адрес
-  				//равный начальному
-//нижнее поле     
+  I = BAS_ADDR;			/*set current address     */
+  				          /*equal to initial        */
+//bottom field  
   wmargenta = newwin(1, 80, 24, 0);
   wbkgd(wmargenta, COLOR_PAIR(COLOR_MAGENTA));
-  waddstr(wmargenta, "\"PgUp\",\"PgDn\",\"Up\",\"Down\"->просмотр дампа; \"Enter\"->выполнить очередную команду");
-      
-//строка состояния
+  waddstr(wmargenta, "\"PgUp\",\"PgDn\",\"Up\",\"Down\"->view dump; \"Enter\"->execute next cmd");
+
+//status line
   wcyan = newwin(1, 80, 23, 0);
   wbkgd(wcyan, COLOR_PAIR(COLOR_CYAN));
-  
-//дамп области загрузки
+
+//load area dump
   wred = newwin(8, 67, 15, 0);
   wbkgd(wred, COLOR_PAIR(COLOR_RED));
-  
-//поле регистров
+
+//registers field
   wblue = newwin(16, 12, 0, 68);
   wbkgd(wblue, COLOR_PAIR(COLOR_BLUE));
-  
-//текст  
+
+//text
   gr_pos_x = 0;
-  gr_pos_y = 14; 
+  gr_pos_y = 14;
   gr_y = 11;
-  wgreen = newwin(gr_y, 67, gr_pos_y, gr_pos_x);	//создадим новое окно
-  wbkgd(wgreen, COLOR_PAIR(COLOR_GREEN));	//выбор цветовой пары
-  
- 
-  keypad(wmargenta, TRUE);				//разрешить преобразование кодов клавиатуры
+  wgreen = newwin(gr_y, 67, gr_pos_y, gr_pos_x);	/*create new window       */
+  wbkgd(wgreen, COLOR_PAIR(COLOR_GREEN));	        /*select color pair       */
+
+
+  keypad(wmargenta, TRUE);				                /*enable kbd code convrsin*/
 
 BEGIN:  
 
-//все допустимые коды к-нд сравнить с текущей и при 
-//совпадениизапомнить номер строки таблицы операций
+//compare all valid cmd codes with current and on
+// match,remember row number of op.table
   for (i = 0; i < NOP; i++)
   {
     if (OBLZ[BAS_IND + CUR_IND] == T_MOP[i].CODOP)
     {
       k = i;
       wprintw(wgreen, "%.06lX: ", I);
-//рисуем окно, выводим текст
+//draw window,output text
       for (j = 0; j < 6; j++)                     /*                        */
-      {                                        /*                        */
-        if (j < T_MOP[i].DLOP)                  /*                        */
-        {                                      /* выдать шестнадцатеричн.*/
+      {                                           /*                        */
+        if (j < T_MOP[i].DLOP)                    /*                        */
+        {                                         /* output hexadecimal     */
 	     wprintw(wgreen, "%.02X", OBLZ[BAS_IND + CUR_IND + j]);
-						  /* запомнить его же в     */
-        INST[j] =                                   /* переменной INST,       */
-  		     OBLZ [BAS_IND + CUR_IND + j];/*                        */
-        }                                      /*                        */
-        else INST [j] = '\x00';                     /*                        */
+						                                      /* remember it in         */
+        INST[j] =                                 /* variable INST,         */
+  		     OBLZ [BAS_IND + CUR_IND + j];          /*                        */
+        }                                         /*                        */
+        else INST [j] = '\x00';                   /*                        */
       }
-      if ((res = T_MOP[i].BXPROG()) != 0)    /* уйти в программу отобр.*/
-	return (res);   			  /* ассемблерного эквивале-*/
-						  /* нта текущей команды,   */
-						  /*                        */
-	goto l0;                                  /* перейти к дальнейшей  */
-    }                  
+      if ((res = T_MOP[i].BXPROG()) != 0)         /* go to subr.for selctig */
+	return (res);   			                          /* assembler equivalent   */
+						                                      /* of current command,    */
+						                                      /*                        */
+	goto l0;                                        /* proceed to further     */
+    }
   }
   return (6);
   
 l0:
-//сдвиг окна вверх
+//scroll window up
   wrefresh(wgreen);
   ii++;
   if (gr_pos_y > 14 - gr_y + 1)
     mvwin(wgreen, gr_pos_y--, gr_pos_x);
-//при достижении некоторого положения, движение останавливается, и производится 
-//прокрутка окна
+//when reaching certain position,movement stops,and
+//window scrolling is performed
   else
   {
       for (jj = 0; jj < gr_y - 1; jj++)
       {
-        temp = mvwinnstr(wgreen, jj + 1, 0, wstr, 67);    
+        temp = mvwinnstr(wgreen, jj + 1, 0, wstr, 67);
         mvwaddnstr(wgreen, jj, 0, wstr, 67);
         wrefresh(wgreen);
       }
-  } 
+  }
   wrefresh(wgreen);
-  
-  I += T_MOP[k].DLOP;                            /*коррекция счет-ка.адреса*/
-  CUR_IND = ( int ) ( I - BAS_ADDR );            /*уст-ка текущ. индекса   */
-						  /*в массиве OBLZ          */
-  I1 = I;                                        /*установка адреса начала */
-						  /*области отсветки        */
+
+  I += T_MOP[k].DLOP;                           /*correct addr.counter    */
+  CUR_IND = ( int ) ( I - BAS_ADDR );           /*set current index       */
+						                                    /*in OBLZ array           */
+  I1 = I;                                       /*set highlight area      */
+						                                    /*start address           */
       
   for ( i = 0; i < 16; i++)
   {
@@ -468,13 +468,13 @@ l0:
     wprintw(wblue, "%d:", i);
     wprintw(wblue, "%.08lX", VR[i]);
   }      
-  wrefresh(wblue);			//вывод на экран		  
-  wclear(wblue);			//очистка окна регистров
-  wind();   
-      
-  waddstr(wcyan, "готовность к выполнению очередной команды с адресом ");
+  wrefresh(wblue);			                          /*output to screen        */
+  wclear(wblue);			                            /*clear registers window  */
+  wind();
+
+  waddstr(wcyan, "ready to execute next command at address ");
   wprintw(wcyan, "%.06lX", I - T_MOP[k].DLOP);
-  waddstr(wcyan, "\n");    				
+  waddstr(wcyan, "\n");
   wrefresh(wcyan);
   wclear(wcyan);
 
@@ -526,12 +526,11 @@ WAIT:
 goto WAIT;
 
 SKIP:
-
-   switch (T_MOP[k].CODOP)                        //согласно  коду команды, 
-   {                                              //селектируемой сч.адреса 
-						  //выбрать подпрогр.интер- 
-    case '\x05' : P_BALR();                       //претации семантики      
-		   break;                         //текущей команды        
+   switch (T_MOP[k].CODOP)                        /*according to cmd code,  */
+   {                                              /*selected by addr.counter*/
+						                                      /*select subr.for inter-  */
+    case '\x05' : P_BALR();                       /*preting semantics       */
+		   break;                                     /*of current command      */
     case '\x07' : { i = P_BCR();
 		    getch();
 		    if (i == 1)
@@ -557,16 +556,16 @@ SKIP:
   return 0;
 }
 //...........................................................................
-//..........................Инициализация curses..............................
+//..........................curses Initialization..............................
 int InitCurses(void)
 {
-  initscr();					//инициализация библиотеки curses
+  initscr();					    /*initialize curses library */
   curs_set(0);
-  noecho();					//не показывать ввод
-  cbreak();					//читать один символ 
-                                                //за раз, не ждать \n
-  keypad(stdscr, TRUE);				//разрешить преобразование кодов клавиатуры
-  start_color(); 
+  noecho();					      /*hide input                */
+  cbreak();					      /*read one character        */
+                          /*at a time,dont wait for \n*/
+  keypad(stdscr, TRUE);		/*enable kbard code convrsin*/
+  start_color();
 
   
   if (has_colors())
@@ -583,13 +582,13 @@ int InitCurses(void)
 }
 //...........................................................................
 
-int main( int argc, char **argv )                /* п р о г р а м м а      */
-						  /*абсолютного загрузчика  */
-						  /*об'ектных файлов        */
+int main( int argc, char **argv )                 /* p r o g r a m          */
+						                                      /*of absolute loader      */
+						                                      /*of object files         */
 {
-  int  I,K,N,J0,res;                              /*рабочие                 */
-  unsigned long J;                                /*переменные              */
-  FILE *fp;                                       /*программы               */
+  int  I,K,N,J0,res;                              /*working                 */
+  unsigned long J;                                /*variables               */
+  FILE *fp;                                       /*program                 */
   char *ptr;
 
 //main programm
@@ -597,7 +596,7 @@ int main( int argc, char **argv )                /* п р о г р а м м а  
 
   if ( argc != 2 )
   {
-    printf ( "%s\n", "Ошибка в командной строке" );
+    printf ( "%s\n", "Error in command line" );
     return -1;
   }
  
@@ -611,84 +610,84 @@ int main( int argc, char **argv )                /* п р о г р а м м а  
   }
   
   if ((fp = fopen(NFIL,"rt")) == NULL)
-    goto ERR1;                                     /*сообщение об ошибке     */
+    goto ERR1;                                    /*error message           */
   else
   {
-    while ( !feof( fp ) )                         /*читать все карты файла  */
-     {                                            /*со списком              */
-      fgets ( SPISOK [ISPIS++] , 80 , fp );       /*в массив SPISOK         */
-      if ( ISPIS == NSPIS )                       /*если этот массив пере-  */
-       {                                          /*полнен, то:             */
-	fclose ( fp );                            /*закрыть файл со списком */
-	goto ERR4;                                /*и выдать сообщение об ош*/
+    while ( !feof( fp ) )                         /*read all file cards     */
+     {                                            /*with list               */
+      fgets ( SPISOK [ISPIS++] , 80 , fp );       /*to SPISOK array         */
+      if ( ISPIS == NSPIS )                       /*if this array is over-  */
+       {                                          /*filled,then:            */
+	fclose ( fp );                                  /*close file with list    */
+	goto ERR4;                                      /*and output error message*/
        }
      }
-    fclose ( fp );                                /*закрыть файл SPISOK     */
+    fclose ( fp );                                /*close SPISOK file       */
 
-    if ( ISPIS == 0 )                             /*если список пустойб     */
-						  /*то:                     */
-     goto ERR2;                                   /* сообщение об ошибке    */
-    else                                          /*иначе:                  */
-     goto CONT1;                                  /* продолжить обработку   */
+    if ( ISPIS == 0 )                             /*if list is empty        */
+						                                      /*then:                   */
+     goto ERR2;                                   /* error message          */
+    else                                          /*otherwise:              */
+     goto CONT1;                                  /* continue processing    */
    }
 
 CONT1:
 
-  for ( I = 0; I < ISPIS; I++ )                   /*перебирая все собираемые*/
-   {      
-                                      /*об'ектные файлы,        */
-    if ((fp = fopen(SPISOK[I], "rb" )) ==  NULL)                                          
-      goto ERR3;                                   /*                        */
-    else                                          /* иначе:                 */
-     {                                          /*                        */
-      while ( !feof( fp) )                        /*  читать файл до конца, */
-       {                                          /*  размеcтить записи в   */   
-	fread ( OBJCARD [IOBJC++] , 80 , 1 , fp );/*  массиве OBJCARD и,если*/
-	if ( IOBJC == NOBJ )                      /*  считаны не все записи,*/
-	 {                                        /*  то:                   */
-	  fclose ( fp );                          /*   выдать сообщ.об ошиб.*/
-	  goto ERR5;                              /*                        */
-	 }                                                              
+  for ( I = 0; I < ISPIS; I++ )                   /*iterating all assembled */
+   {
+                                                  /*object files,           */
+    if ((fp = fopen(SPISOK[I], "rb" )) ==  NULL)
+      goto ERR3;                                  /*                        */
+    else                                          /* otherwise:             */
+     {                                            /*                        */
+      while ( !feof( fp) )                        /*  read file to end,     */
+       {                                          /*  place records in      */
+	fread ( OBJCARD [IOBJC++] , 80 , 1 , fp );      /*  OBJCARD array and,if  */
+	if ( IOBJC == NOBJ )                            /*  not all records read, */
+	 {                                              /*  then:                 */
+	  fclose ( fp );                                /*   output error message */
+	  goto ERR5;                                    /*                        */
+	 }
        }                                          /*                        */
-      fclose ( fp );                              /*  закрыть очередной файл*/
-       
-      goto CONT2;                                 /*  и продолжить обработку*/
+      fclose ( fp );                              /*  close next file       */
+
+      goto CONT2;                                 /* and continue processing*/
      }
    }
        
 CONT2:
 
-  POINT.P_OBLZ = OBLZ;                            /*расчитать абсолютный    */
-  J = POINT.VAL_P.SEGM ;                          /*адрес области загрузки  */
-  J = J << 4;                                     /*OBLZ в переменной J     */
+  POINT.P_OBLZ = OBLZ;                            /*calculate absolute      */
+  J = POINT.VAL_P.SEGM ;                          /*addr.of load area       */
+  J = J << 4;                                     /*OBLZ in variable J      */
   J += POINT.VAL_P.SMESH;
 
-  if ( ( J0 = (int) J%8 ) == 0 )                  /*выровнять полученное    */
+  if ( ( J0 = (int) J%8 ) == 0 )                  /*align received          */
    {
-    BAS_ADDR = J;                                 /*значение на границу     */
+    BAS_ADDR = J;                                 /*value to boundary       */
     BAS_IND  = 0;
    }
-  else                                            /*двойного слова и запомн.*/
+  else                                            /*double word and store   */
    {
-    BAS_ADDR = ( ( J >> 3 ) + 1 ) << 3;           /*его в перем.BAS_ADDR,а  */
-    BAS_IND = 8 - J0;                             /*соотв.индекс масс.OBLZ-в*/
-   }						  /*перем.BAS_IND           */
+    BAS_ADDR = ( ( J >> 3 ) + 1 ) << 3;           /*it in BAS_ADDR variable */
+    BAS_IND = 8 - J0;                             /*and corr. OBLZ arr.index*/
+   }						  /*in BAS_IND              */
 
-  for ( I = 0; I < IOBJC; I++ )                   /*перебирая все считанные */
-   {                                              /*карты об'ектных файлов, */
-    if ( !memcmp ( &OBJCARD [I][1] , "TXT" , 3 ) )/*отобрать принадл.к типу */
-     {                                            /*TXT и расчитать:        */
+  for ( I = 0; I < IOBJC; I++ )                   /*iterating all read      */
+   {                                              /*object file cards,      */
+    if ( !memcmp ( &OBJCARD [I][1] , "TXT" , 3 ) )/*select belonging to type*/
+     {                                            /*TXT and calc:           */
       memcpy ( TXT.BUF_TXT , OBJCARD [I] , 80 );  /*                        */
-      J = TXT.STR_TXT.ADOP [0];                   /* в переменной J начальн.*/
-      J = (J << 8) + TXT.STR_TXT.ADOP [1];        /*  индекс загрузки в мас-*/
-      J = (J << 8) + TXT.STR_TXT.ADOP [2];        /*  сиве OBLZ             */
-      J += BAS_IND;                               /*и                       */
+      J = TXT.STR_TXT.ADOP [0];                   /* in variable J initial  */
+      J = (J << 8) + TXT.STR_TXT.ADOP [1];        /*  load index in arr-    */
+      J = (J << 8) + TXT.STR_TXT.ADOP [2];        /*  ay OBLZ               */
+      J += BAS_IND;                               /*and                     */
 						  /*                        */
-      K = TXT.STR_TXT.DLNOP [0];                  /* в переменной K длину   */
-      K = (K << 8) + TXT.STR_TXT.DLNOP [1];       /* загружаемых данных     */
+      K = TXT.STR_TXT.DLNOP [0];                  /* in variable K length   */
+      K = (K << 8) + TXT.STR_TXT.DLNOP [1];       /* of loaded data         */
 
-      for ( N=0; N < K; N++ )                     /*загрузить данные с очер.*/
-       OBLZ [ (int) J++ ] = TXT.STR_TXT.OPER [N]; /*об'ектной карты         */
+      for ( N=0; N < K; N++ )                     /*load data from current  */
+       OBLZ [ (int) J++ ] = TXT.STR_TXT.OPER [N]; /*object card             */
      }
    }
    
@@ -718,48 +717,48 @@ CONT2:
     }
   }
   
-  endwin(); 
+  endwin();
   END:
-  printf ("\n%s\n", "завершение обработки");
+  printf ("\n%s\n", "processing complete");
 
   return 0;
-//Б Л О К  выдачи диагностических сообщений
+//D I A G N O S T I C  M E S S A G E S  B L O C K
 ERR1:
-  printf ("%s%s\n", "ошибка открытия файла со списком собираемых ", "модулей");
+  printf ("%s%s\n", "error opening file with list of assembled ", "modules");
   goto END;
 
 ERR2:
-  printf ("%s\n", "пустой файл со списком собираемых модулей");
+  printf ("%s\n", "empty file with list of assembled modules");
   goto END;
 
 ERR3:
   printf ("%s: %s\n" ,
-   "ошибка открытия файла" , SPISOK [I] );
+   "error opening file" , SPISOK [I] );
   goto END;
 
 ERR4:
   printf ("%s\n" ,
-   "переполнение списка собираемых модулей" );
+   "overflow of assembled modules list" );
   goto END;
 
 ERR5:
   printf ("%s\n" ,
-   "переполнение буфера хранения об'ектных карт");
+   "overflow of object cards storage buffer");
   goto END;
 
 ERR6:
   printf ("%s\n" ,
-   "недопустимый код команды" );
+   "invalid command code" );
   goto END;
-  
+
 ERR7:
-  printf("прерывание - ошибка адресации\n");
+  printf("interrupt - addressing error\n");
   goto END;
-  
+
 ERR8:
   goto END;
 
 ERR9:
-  printf ( "%s\n", "Неверный тип файла с исходным текстом" );
+  printf ( "%s\n", "Invalid file type with source text" );
   goto END;
 }

@@ -1,66 +1,66 @@
 /*
-***** Н А Ч А Л О   файла компилятора с языка высокого уровня
+***** B E G I N N I N G   of high-level language compiler file
 */
 
 /*
-***** Б л о к  об'явлений макроопределений
+***** B l o c k  of macro definitions declarations
 */
 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-						  /* п р е д е л ь н ы е    */
-						  /* размеры:               */
-#define MAXNISXTXT 50                             /* - исходного текста;    */
-#define NSINT     201                             /* - табл.синтакс.правил; */
-#define NCEL       20                             /* - стека целей;         */
-#define NDST      500                             /* - стека достижений;    */
-#define NVXOD      53                             /* - табл.входов;         */
-#define NSTROKA   200                             /* - строки плотн.текста; */
-#define NNETRM     16                             /* - списка нетерминалов; */
-#define MAXLTXT    50                             /* - выходного текста;    */
-#define MAXFORMT   30                             /* - форматированного ин- */
-						  /* терпретируемого  фраг- */
-						  /* мента исх.текста;      */
-#define NSYM      100                             /* - таблицы имен и меток */
+						  /* l i m i t i n g       */
+						  /* sizes:                */
+#define MAXNISXTXT 50                             /* - source text;         */
+#define NSINT     201                             /* - syntax rules table;  */
+#define NCEL       20                             /* - goals stack;         */
+#define NDST      500                             /* - achievements stack;  */
+#define NVXOD      53                             /* - entries table;       */
+#define NSTROKA   200                             /* - compressed text line;*/
+#define NNETRM     16                             /* - non-terminals list;  */
+#define MAXLTXT    50                             /* - output text;         */
+#define MAXFORMT   30                             /* - formatted inter-     */
+                                                  /* preted fragment        */
+                                                  /* of source text;        */
+#define NSYM      100                             /* - names and labels tabl*/
 
 /*
-***** Б а з а  данных компилятора
+***** C o m p i l e r   database
 */
 
 /*
-***** Б л о к  об'явления массива с исходным текстом
+***** B l o c k  of source text array declaration
 */
 
-int  NISXTXT;                                     /* длина массива          */
-char ISXTXT [MAXNISXTXT][80];                     /* тело массива           */
+int  NISXTXT;                                     /* array length           */
+char ISXTXT [MAXNISXTXT][80];                     /* array body             */
 
 /*
-***** Б л о к  об'явления рабочих переменных
+***** B l o c k  of working variables declaration
 */
 
-int I1,I2,I3,I4;                                  /* счетчики циклов        */
+int I1,I2,I3,I4;                                  /* loop counters          */
 
-char PREDSYM = ' ';                               /*последний обработанный  */
-						  /*символ в уплотненном    */
-						  /*исходном тексте         */
+char PREDSYM = ' ';                               /*last processed          */
+						  /*character in compressed */
+						  /*source text             */
 
-char STROKA [ NSTROKA ];                          /*место хранения уплотнен-*/
-						  /*ного исходного текста   */
+char STROKA [ NSTROKA ];                          /*storage lction for comp.*/
+						  /*ressed source text      */
 
-int I,J,K,L;                                      /*текущие индексы соответ-*/
-						  /*ственно в:              */
-						  /* - уплотненном тексте;  */
-						  /* - табл.грамм.правил;   */
-						  /* - стеке поставленных   */
-						  /*целей;                  */
-						  /* - стеке достигнутых    */
-						  /*целей;                  */
+int I,J,K,L;                                      /*current indices corresp.*/
+						  /*pondingly in:           */
+						  /* - compressed text;     */
+						  /* - grammar rules table; */
+						  /* - goals stack          */
+						  /* achieved;              */
+						  /* - achievements stack   */
+						  /* achieved;              */
 
-union                                             /*шаблон для генерации    */
- {                                                /*записи выходного файла  */
-  char    BUFCARD [80];                           /*на АССЕМБЛЕРЕ IBM 370   */
+union                                             /*template for generation */
+ {                                                /*of output file record   */
+  char    BUFCARD [80];                           /*in IBM 370 ASSEMBLER    */
   struct
    {
     char METKA   [8];
@@ -73,28 +73,28 @@ union                                             /*шаблон для гене
    } _BUFCARD;
  } ASS_CARD ;
 
-char ASSTXT [ MAXLTXT ][80];                      /*массив для хранения     */
-						  /*выходного текста на     */
-						  /*АССЕМБЛЕРЕ IBM 370      */
+char ASSTXT [ MAXLTXT ][80];                      /*array for storage       */
+						  /*of output text in       */
+						  /*IBM 370 ASSEMBLER       */
 
-int  IASSTXT;                                     /*индекс выходного массива*/
+int  IASSTXT;                                     /*output array index      */
 
-char FORMT [MAXFORMT] [9];                        /*массив для форматирован-*/
-						  /*ного  (в виде последова-*/
-						  /*тельности 9-ти позицион-*/
-						  /*ных строк-лексем) пред- */
-						  /*ставления интерпретиру- */
-						  /*емого фрагмента исходно-*/
-						  /*го плотного текста      */
+char FORMT [MAXFORMT] [9];                        /*array for formatted     */
+                                                  /*representation (as seq. */
+                                                  /*of 9-position strings-  */
+                                                  /*lexemes) of interpreted */
+                                                  /*source text fragment    */
+                                                  /*                        */
+                                                  /*                        */
 
-int  IFORMT;                                      /*индекс форматированного */
-						  /*массива                 */
+int  IFORMT;                                      /*formatted array index   */
+						                                      /*array                   */
 /*
-***** Б л о к  об'явления таблиц базы данных
+***** B l o c k  of database tables declaration
 */
 
 /*
-***** Т а б л и ц а, используемая как магазин (стек) достижений
+***** T a b l e used as achievements stack (LIFO)
 */
 
 struct
@@ -107,7 +107,7 @@ struct
  } DST [ NDST ];
 
 /*
-***** Т а б л и ц а, используемая как магазин (стек) целей
+***** T a b l e used as goals stack (LIFO)
 */
 
 struct
@@ -118,9 +118,9 @@ struct
  } CEL [ NCEL ];
 
 /*
-***** Т а б л и ц а, синтаксических правил, записанных в форме распознавания,
-***** сгруппированных в "кусты" и представленных в виде двухнапрвленного
-***** списка с альтернативными разветвлениями
+***** T a b l e of syntax rules written in recognition form,
+***** grouped in "bushes" and presented as two-way
+***** list with alternative branches
 */
 
 struct
@@ -131,66 +131,66 @@ struct
   int  ALT;
  } SINT [ NSINT ] =
 /*   __________ _________ _______ _______ ______
-    |  NN      :    посл : пред  :  дер  : альт |
+    |  NN      :    next : pred  :  der  : alt  |
     |__________:_________:_______:_______:______|                          */
 {
  {/*.    0     .*/    -1 ,    -1 , "***" ,   -1 },
-  /*                                               вход с символа - 0      */
+  /*                                               input from symbol - 0     */
  {/*.    1     .*/     2 ,     0 , "0  " ,    0 },
  {/*.    2     .*/     3 ,     1 , "CIF" ,    0 },
  {/*.    3     .*/     0 ,     2 , "*  " ,    0 },
-  /*                                               вход с символа - 1      */
+  /*                                               input from symbol - 1     */
  {/*.    4     .*/     5 ,     0 , "1  " ,    0 },
  {/*.    5     .*/     6 ,     4 , "CIF" ,    7 },
  {/*.    6     .*/     0 ,     5 , "*  " ,    0 },
 
  {/*.    7     .*/     8 ,     4 , "MAN" ,    0 },
  {/*.    8     .*/     0 ,     7 , "*  " ,    0 },
-  /*                                               вход с символа - 2      */
+  /*                                               input from symbol - 2     */
  {/*.    9     .*/    10 ,     0 , "2  " ,    0 },
  {/*.   10     .*/    11 ,     9 , "CIF" ,    0 },
  {/*.   11     .*/     0 ,    10 , "*  " ,    0 },
-  /*                                               вход с символа - 3      */
+  /*                                               input from symbol - 3     */
  {/*.   12     .*/    13 ,     0 , "3  " ,    0 },
  {/*.   13     .*/    14 ,    12 , "CIF" ,    0 },
  {/*.   14     .*/     0 ,    13 , "*  " ,    0 },
-  /*                                               вход с символа - 4      */
+  /*                                               input from symbol - 4     */
  {/*.   15     .*/    16 ,     0 , "4  " ,    0 },
  {/*.   16     .*/    17 ,    15 , "CIF" ,    0 },
  {/*.   17     .*/     0 ,    16 , "*  " ,    0 },
-  /*                                               вход с символа - 5      */
+  /*                                               input from symbol - 5     */
  {/*.   18     .*/    19 ,     0 , "5  " ,    0 },
  {/*.   19     .*/    20 ,    18 , "CIF" ,    0 },
  {/*.   20     .*/     0 ,    19 , "*  " ,    0 },
-  /*                                               вход с символа - 6      */
+  /*                                               input from symbol - 6     */
  {/*.   21     .*/    22 ,     0 , "6  " ,    0 },
  {/*.   22     .*/    23 ,    21 , "CIF" ,    0 },
  {/*.   23     .*/     0 ,    22 , "*  " ,    0 },
-  /*                                               вход с символа - 7      */
+  /*                                               input from symbol - 7     */
  {/*.   24     .*/    25 ,     0 , "7  " ,    0 },
  {/*.   25     .*/    26 ,    24 , "CIF" ,    0 },
  {/*.   26     .*/     0 ,    25 , "*  " ,    0 },
-  /*                                               вход с символа - 8      */
+  /*                                               input from symbol - 8     */
  {/*.   27     .*/    28 ,     0 , "8  " ,    0 },
  {/*.   28     .*/    29 ,    27 , "CIF" ,    0 },
  {/*.   29     .*/     0 ,    28 , "*  " ,    0 },
-  /*                                               вход с символа - 9      */
+  /*                                               input from symbol - 9     */
  {/*.   30     .*/    31 ,     0 , "9  " ,    0 },
  {/*.   31     .*/    32 ,    30 , "CIF" ,    0 },
  {/*.   32     .*/     0 ,    31 , "*  " ,    0 },
-  /*                                               вход с символа - A      */
+  /*                                               input from symbol - A     */
  {/*.   33     .*/    34 ,     0 , "A  " ,    0 },
  {/*.   34     .*/    35 ,    33 , "BUK" ,    0 },
  {/*.   35     .*/     0 ,    34 , "*  " ,    0 },
-  /*                                               вход с символа - B      */
+  /*                                               input from symbol - B     */
  {/*.   36     .*/    37 ,     0 , "B  " ,    0 },
  {/*.   37     .*/    38 ,    36 , "BUK" ,    0 },
  {/*.   38     .*/     0 ,    37 , "*  " ,    0 },
-  /*                                               вход с символа - C      */
+  /*                                               input from symbol - C     */
  {/*.   39     .*/    40 ,     0 , "C  " ,    0 },
  {/*.   40     .*/    41 ,    39 , "BUK" ,    0 },
  {/*.   41     .*/     0 ,    40 , "*  " ,    0 },
-  /*                                               вход с символа - D      */
+  /*                                               input from symbol - D     */
  {/*.   42     .*/    43 ,     0 , "D  " ,    0 },
  {/*.   43     .*/    44 ,    42 , "BUK" ,   45 },
  {/*.   44     .*/     0 ,    43 , "*  " ,    0 },
@@ -225,7 +225,7 @@ struct
  {/*.   71     .*/    72 ,    70 , ")  " ,    0 },
  {/*.   72     .*/    73 ,    71 , ";  " ,    0 },
  {/*.   73     .*/   186 ,    72 , "ODC" ,    0 },
-  /*                                               вход с символа - E      */
+  /*                                               input from symbol - E     */
  {/*.   74     .*/    75 ,     0 , "E  " ,    0 },
  {/*.   75     .*/    76 ,    74 , "N  " ,   82 },
  {/*.   76     .*/    77 ,    75 , "D  " ,    0 },
@@ -237,23 +237,23 @@ struct
 
  {/*.   82     .*/    83 ,    74 , "BUK" ,    0 },
  {/*.   83     .*/     0 ,    82 , "*  " ,    0 },
-  /*                                               вход с символа - M      */
+  /*                                               input from symbol - M     */
  {/*.   84     .*/    85 ,     0 , "M  " ,    0 },
  {/*.   85     .*/    86 ,    84 , "BUK" ,    0 },
  {/*.   86     .*/     0 ,    85 , "*  " ,    0 },
-  /*                                               вход с символа - P      */
+  /*                                               input from symbol - P     */
  {/*.   87     .*/    88 ,     0 , "P  " ,    0 },
  {/*.   88     .*/    89 ,    87 , "BUK" ,    0 },
  {/*.   89     .*/     0 ,    88 , "*  " ,    0 },
-  /*                                               вход с символа - X      */
+  /*                                               input from symbol - X     */
  {/*.   90     .*/    91 ,     0 , "X  " ,    0 },
  {/*.   91     .*/    92 ,    90 , "BUK" ,    0 },
  {/*.   92     .*/     0 ,    91 , "*  " ,    0 },
-  /*                                               вход с символа - BUK    */
+  /*                                               input from symbol - BUK   */
  {/*.   93     .*/    94 ,     0 , "BUK" ,    0 },
  {/*.   94     .*/    95 ,    93 , "IDE" ,    0 },
  {/*    95     .*/     0 ,    94 , "*  " ,    0 },
-  /*                                               вход с символа - IDE    */
+  /*                                               input from symbol - IDE   */
  {/*.   96     .*/    97 ,     0 , "IDE" ,    0 },
  {/*.   97     .*/    98 ,    96 , "BUK" ,  100 },
  {/*.   98     .*/    99 ,    97 , "IDE" ,    0 },
@@ -268,15 +268,15 @@ struct
 
  {/*.  105     .*/   106 ,    96 , "IPR" ,    0 },
  {/*.  106     .*/     0 ,   105 , "*  " ,    0 },
-  /*                                               вход с символа - +      */
+  /*                                               input from symbol - +     */
  {/*.  107     .*/   108 ,     0 , "+  " ,    0 },
  {/*.  108     .*/   109 ,   107 , "ZNK" ,    0 },
  {/*.  109     .*/     0 ,   108 , "*  " ,    0 },
-  /*                                               вход с символа - -      */
+  /*                                               input from symbol - -     */
  {/*.  110     .*/   111 ,     0 , "-  " ,    0 },
  {/*.  111     .*/   112 ,   110 , "ZNK" ,    0 },
  {/*.  112     .*/     0 ,   111 , "*  " ,    0 },
-  /*                                               вход с символа - IPR    */
+  /*                                               input from symbol - IPR   */
  {/*.  113     .*/   114 ,     0 , "IPR" ,    0 },
  {/*.  114     .*/   115 ,   113 , ":  " ,    0 },
  {/*.  115     .*/   116 ,   114 , "P  " ,    0 },
@@ -300,16 +300,16 @@ struct
  {/*.  133     .*/   134 ,   132 , ";  " ,    0 },
  {/*.  134     .*/   135 ,   133 , "OPR" ,    0 },
  {/*.  135     .*/     0 ,   134 , "*  " ,    0 },
- /*                                                вход с символа - CIF    */
+ /*                                                input from symbol - CIF   */
  {/*.  136     .*/   137 ,     0 , "CIF" ,    0 },
  {/*.  137     .*/   138 ,   136 , "RZR" ,    0 },
  {/*.  138     .*/     0 ,     0 , "*  " ,    0 },
-  /*                                               вход с символа - RZR    */
+  /*                                               input from symbol - RZR   */
  {/*.  139     .*/   140 ,     0 , "RZR" ,    0 },
  {/*.  140     .*/   141 ,   139 , "CIF" ,    0 },
  {/*.  141     .*/   142 ,   140 , "RZR" ,    0 },
  {/*.  142     .*/     0 ,   141 , "*  " ,    0 },
-  /*                                               вход с символа - MAN    */
+  /*                                               input from symbol - MAN   */
  {/*.  143     .*/   144 ,     0 , "MAN" ,    0 },
  {/*.  144     .*/   145 ,   143 , "B  " ,  147 },
  {/*.  145     .*/   146 ,   144 , "LIT" ,    0 },
@@ -322,7 +322,7 @@ struct
  {/*.  150     .*/   151 ,   143 , "1  " ,    0 },
  {/*.  151     .*/   152 ,   150 , "MAN" ,    0 },
  {/*.  152     .*/     0 ,   151 , "*  " ,    0 },
-  /*                                               вход с символа - IPE    */
+  /*                                               input from symbol - IPE   */
  {/*.  153     .*/   154 ,     0 , "IPE" ,    0 },
  {/*.  154     .*/   155 ,   153 , "=  " ,  159 },
  {/*.  155     .*/   156 ,   154 , "AVI" ,    0 },
@@ -332,11 +332,11 @@ struct
 
  {/*.  159     .*/   160 ,   153 , "AVI" ,    0 },
  {/*.  160     .*/     0 ,   159 , "*  " ,    0 },
-  /*                                               вход с символа - LIT    */
+  /*                                               input from symbol - LIT   */
  {/*.  161     .*/   162 ,     0 , "LIT" ,    0 },
  {/*.  162     .*/   163 ,   161 , "AVI" ,    0 },
  {/*.  163     .*/     0 ,   162 , "*  " ,    0 },
-  /*.                                              вход с символа - AVI    */
+  /*.                                              input from symbol - AVI   */
  {/*.  164     .*/   165 ,     0 , "AVI" ,    0 },
  {/*.  165     .*/   166 ,   164 , "ZNK" ,    0 },
  {/*.  166     .*/   167 ,   165 , "LIT" ,  168 },
@@ -345,17 +345,17 @@ struct
  {/*.  168     .*/   169 ,   165 , "IPE" ,    0 },
  {/*.  169     .*/   170 ,   168 , "AVI" ,    0 },
  {/*.  170     .*/     0 ,   169 , "*  " ,    0 },
-  /*                                               вход с символа - OPR    */
+  /*                                               input from symbol - OPR   */
  {/*.  171     .*/   172 ,     0 , "OPR" ,    0 },
  {/*.  172     .*/   173 ,   171 , "TEL" ,    0 },
  {/*.  173     .*/   174 ,   172 , "OEN" ,    0 },
  {/*.  174     .*/   175 ,   173 , "PRO" ,    0 },
  {/*.  175     .*/     0 ,   174 , "*  " ,    0 },
-  /*.                                              вход с символа - ODC    */
+  /*.                                              input from symbol - ODC   */
  {/*.  176     .*/   177 ,     0 , "ODC" ,    0 },
  {/*.  177     .*/   178 ,   176 , "TEL" ,    0 },
  {/*.  178     .*/     0 ,   177 , "*  " ,    0 },
-  /*.                                              вход с символа - TEL    */
+  /*.                                              input from symbol - TEL   */
  {/*.  179     .*/   180 ,     0 , "TEL" ,    0 },
  {/*.  180     .*/   181 ,   179 , "ODC" ,  183 },
  {/*.  181     .*/   182 ,   180 , "TEL" ,    0 },
@@ -387,9 +387,9 @@ struct
 };
 
 /*
-***** Т а б л и ц а  входов в "кусты" ( корней )грамматических правил,
-***** содержащая тип ( терминальность или нетерминальность ) корневых
-***** символов
+***** T a b l e of entries to "bushes" (roots) of grammar rules,
+***** containing type (terminality or non-terminality) of root
+***** symbols
 */
 
 struct
@@ -399,7 +399,7 @@ struct
   char TYP;
  } VXOD [ NVXOD ] =
 /*   __________ ___________ _____ ______
-    |  NN      |    символ | вход| тип  |
+    |  NN      |   symbol|entry| type |
     |__________|___________|_____|______|                                  */
 
 {
@@ -458,8 +458,8 @@ struct
 };
 
 /*
-***** Т а б л и ц а  матрицы смежности - основа построения матрицы
-***** преемников
+***** T a b l e of adjacency matrix - basis for successor matrix
+***** construction
 */
 
 char TPR [ NVXOD ] [ NNETRM ] =
@@ -537,17 +537,17 @@ char TPR [ NVXOD ] [ NNETRM ] =
 /*..........................................................................*/
 
 /*
-****** Н А Ч А Л О  обработки исходного текста
+******* B E G I N N I N G  of source text processing
 */
 
 /*..........................................................................*/
 
-void compress_ISXTXT()                            /* Программа уплотнения   */
-						  /* исходного текста путем */
-						  /* удаления "лишних"      */
-						  /* пробелов, выполняющая  */
-						  /* роль примитивного лек- */
-						  /* сического анализатора  */
+void compress_ISXTXT()                            /* Compression program    */
+						  /* of source text by      */
+						  /* removing "extra"       */
+						  /* spaces, performing     */
+						  /* role of primitive lex- */
+						  /* ical analyzer          */
  {
   I3 = 0;
   for ( I1 = 0 ; I1 < NISXTXT ; I1++ )
@@ -608,10 +608,10 @@ L2:    continue;
 
 /*..........................................................................*/
 
-void build_TPR ()                                 /* Построение таблицы     */
-						  /* преемников из матрицы  */
-						  /* смежности по алгоритму */
-						  /* Варшалла               */
+void build_TPR ()                                 /* Successor matrix table   */
+						  /* from adjacency matrix  */
+						  /* using Warshall alg.  */
+						  /*                      */
  {
   for ( I1 = 0; I1 < NNETRM; I1++ )
    {
@@ -628,9 +628,9 @@ void build_TPR ()                                 /* Построение таб
 
 /*..........................................................................*/
 
-void mcel ( char* T1, int T2, int T3 )            /* программа заполнения   */
- {                                                /* ячейки стека поставлен-*/
-						  /* ных целей              */
+void mcel ( char* T1, int T2, int T3 )            /* program for filling    */
+ {                                                /* cell of goals stack    */
+						  /* placed                 */
   strcpy ( CEL [ K ].CEL1, T1 );
   CEL [ K ].CEL2 = T2;
   CEL [ K ].CEL3 = T3;
@@ -640,9 +640,9 @@ void mcel ( char* T1, int T2, int T3 )            /* программа запо
 /*..........................................................................*/
 
 void mdst ( char* T1, int T2, int T3, int T4, int T5 )
- {                                                /* программа заполнения   */
-  strcpy ( DST [ L ].DST1, T1 );                  /* ячейки стека достигну- */
-  DST [ L ].DST2 = T2;                            /* тых целей              */
+ {                                                /* program for filling    */
+  strcpy ( DST [ L ].DST1, T1 );                  /* cell of achievements   */
+  DST [ L ].DST2 = T2;                            /* stack                  */
   DST [ L ].DST3 = T3;
   DST [ L ].DST4 = T4;
   DST [ L ].DST5 = T5;
@@ -651,11 +651,11 @@ void mdst ( char* T1, int T2, int T3, int T4, int T5 )
 
 
 /*..........................................................................*/
-						  /* п р о г р а м м а      */
-int numb ( char* T1, int T2 )                     /* вычисления порядкового */
-						  /* номера строки в табл.  */
-						  /* VXOD, соответствующей  */
-						  /* строке-параметру функц.*/
+						  /* p r o g r a m          */
+int numb ( char* T1, int T2 )                     /* calculation of ordinal */
+						  /* row number in table    */
+						  /* VXOD corresponding to  */
+						  /* function param. line   */
  {
   int k;
 
@@ -677,11 +677,11 @@ numb1:
  }
 
 /*..........................................................................*/
-						  /*   п р о г р а м м а    */
-int sint_ANAL ()                                  /*   построения  дерева   */
-						  /*синтаксического разбора,*/
- {                                                /*выполняющая роль синтак-*/
-						  /*сического анализатора   */
+						  /*   p r o g r a m        */
+int sint_ANAL ()                                  /*   syntax tree constr.  */
+						                                      /*parsing, performing role*/
+ {                                                /*of syntax analyzer      */
+						                                      /*                        */
   I4 = 0;
 
 L1:
@@ -822,27 +822,27 @@ L10:
 
 /*..........................................................................*/
 
-struct                                            /* таблица имен меток и   */
- {                                                /* переменных, заполняемая*/
-  char NAME [8];                                  /* на первом проходе се-  */
-  char TYPE;                                      /* мантического вычисления*/
-  char RAZR [5];                                  /* и используемая на вто- */
-  char INIT [50];                                 /* ром проходе семантичес-*/
- } SYM [ NSYM ];                                  /* кого вычисления        */
+struct                                            /* table of labels and    */
+ {                                                /* variables, filled at   */
+  char NAME [8];                                  /* 1st pass semantic calc.*/
+  char TYPE;                                      /* and used at 2nd pass   */
+  char RAZR [5];                                  /* semantic calculation   */
+  char INIT [50];                                 /*                        */
+ } SYM [ NSYM ];                                  /*                        */
 
-int ISYM = 0;                                     /* текущий индекс таблицы */
-						  /* имен                   */
+int ISYM = 0;                                     /* current index of names */
+						                                      /* table                  */
 
-char NFIL [30]="\x0";                             /* хранилище имени транс- */
-						  /* лируемой программы     */
+char NFIL [30]="\x0";                             /* storage of translated  */
+						                                      /* program name           */
 
 /*..........................................................................*/
 
-long int VALUE ( char* s )                        /* п р о г р а м м а      */
- {                                                /* перевода двоичной      */
-  long int S;                                     /* константы из ASCIIz-ви-*/
-  int i;                                          /* да во внутреннее пред- */
-						  /* ставление типа long int*/
+long int VALUE ( char* s )                        /* p r o g r a m          */
+ {                                                /* for binary constant    */
+  long int S;                                     /* translation from ASCII */
+  int i;                                          /* to internal long int   */
+						                                      /* representation         */
   i = 0;
   S = 0;
   while ( *(s + i) != 'B' )
@@ -861,11 +861,11 @@ long int VALUE ( char* s )                        /* п р о г р а м м а 
 
 
 /*..........................................................................*/
-void FORM ()                                      /* п р о г р а м м а      */
- {                                                /* представления фрагмента*/
-						  /* плотного текста в виде */
-						  /* массива 9-ти символьных*/
-						  /* лексем                 */
+void FORM ()                                      /* p r o g r a m          */
+ {                                                /* for fragment represen- */
+                                                  /*tation as array of 9-   */
+                                                  /*char. lexemes of comp.  */
+                                                  /*text                    */
   int i,j;
 
   for ( IFORMT = 0; IFORMT < MAXFORMT; IFORMT++ )
@@ -899,11 +899,11 @@ FORM1:
  }
 
 /*..........................................................................*/
-						  /* п р о г р а м м а      */
-void ZKARD ()                                     /* записи очередной сгене-*/
- {                                                /* рированной записи вы-  */
-						  /* ходного файла в массив */
-						  /* ASSTXT                 */
+						  /* p r o g r a m          */
+void ZKARD ()                                     /* for writing next gen.  */
+ {                                                /* record to output file  */
+                                                  /*array                   */
+                                                  /* ASSTXT                 */
   char i;
   memcpy ( ASSTXT [ IASSTXT++ ],
 			   ASS_CARD.BUFCARD, 80 );
@@ -914,11 +914,11 @@ void ZKARD ()                                     /* записи очередн
  }
 
 /*..........................................................................*/
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала AVI на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* AVI -   "арифм.выраж." */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal AVI at */
+						  /* 1st pass. Here AVI is  */
+						  /* "arithm. expression"   */
 int AVI1 ()
  {
   return 0;
@@ -926,11 +926,11 @@ int AVI1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала BUK на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* BUK -   "буква"        */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal BUK at */
+						  /* 1st pass. Here AVI is  */
+						  /* BUK -   "letter"        */
 int BUK1 ()
  {
   return 0;
@@ -938,11 +938,11 @@ int BUK1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала CIF на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* CIF -   "цифра"        */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal CIF at */
+						  /* 1st pass. Here AVI is  */
+						  /* CIF -   "digit"        */
 int CIF1 ()
  {
   return 0;
@@ -950,11 +950,11 @@ int CIF1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IDE на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* IDE -   "идентификатор"*/
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IDE at */
+						  /* 1st pass. Here AVI is  */
+						  /* IDE -   "identifier"   */
 int IDE1 ()
  {
   return 0;
@@ -962,11 +962,11 @@ int IDE1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IPE на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* IPE - "имя переменной" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IPE at */
+						  /* 1st pass. Here AVI is  */
+						  /* IPE - "variable name"  */
 int IPE1 ()
  {
   return 0;
@@ -974,11 +974,11 @@ int IPE1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IPR на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* IPR -   "имя программы" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IPR at */
+						  /* 1st pass. Here AVI is  */
+						  /* IPR -   "program name" */
 int IPR1 ()
  {
   return 0;
@@ -986,11 +986,11 @@ int IPR1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала LIT на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* LIT -   "литерал"      */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal LIT at */
+						  /* 1st pass. Here AVI is  */
+						  /* LIT -   "literal"      */
 int LIT1 ()
  {
   return 0;
@@ -998,11 +998,11 @@ int LIT1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала MAN на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* MAN -   "мантисса"     */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal MAN at */
+						  /* 1st pass. Here AVI is  */
+						  /* MAN -   "mantissa"     */
 int MAN1 ()
  {
   return 0;
@@ -1010,98 +1010,98 @@ int MAN1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала ODC на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* ODC - "операт.ПЛ1- DCL"*/
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal ODC at */
+						  /* 1st pass. Here AVI is  */
+						  /* ODC - "PL1 op. DCL"    */
 int ODC1 ()
  {
   int i;
-  FORM ();                                        /* форматирование ПЛ1-опе-*/
-						  /* ратора DCL             */
+  FORM ();                                        /* formatting of PL1 oper-*/
+						  /* ator DCL             */
 
-  for ( i = 0; i < ISYM; i++ )                    /* если фиксируем повтор- */
-   {                                              /* повторное объявление   */
-    if (  !strcmp ( SYM [i].NAME, FORMT [1] ) &&  /* второго терма оператора*/
-	  strlen ( SYM [i].NAME ) ==              /* DCL, то                */
+  for ( i = 0; i < ISYM; i++ )                    /* if we detect repeated  */
+   {                                              /* declaration of         */
+    if (  !strcmp ( SYM [i].NAME, FORMT [1] ) &&  /* second term of operator*/
+	  strlen ( SYM [i].NAME ) ==                    /* DCL, then              */
 			     strlen ( FORMT [1] )
        )
-     return 6;                                    /* завершение программы   */
-						  /* по ошибке              */
+     return 6;                                    /* program completion     */
+						                                      /* on error               */
    }
 
-  strcpy ( SYM [ISYM].NAME, FORMT [1] );          /* при отсутствии повтор- */
-  strcpy ( SYM [ISYM].RAZR, FORMT [4] );          /* ного объявления иденти-*/
-						  /* фикатора запоминаем его*/
-						  /* вместе с разрядностью в*/
-						  /* табл.SYM               */
+  strcpy ( SYM [ISYM].NAME, FORMT [1] );          /* if no repeated         */
+  strcpy ( SYM [ISYM].RAZR, FORMT [4] );          /* identifier declaration */
+                                                  /* we store it with       */
+                                                  /* its precision in       */
+                                                  /* table SYM              */
 
-  if ( !strcmp ( FORMT [2], "BIN" ) &&            /* если идентификатор оп- */
-		  !strcmp ( FORMT [3], "FIXED" ) )/* ределен как bin fixed, */
+  if ( !strcmp ( FORMT [2], "BIN" ) &&            /* if identifier speci-   */
+		  !strcmp ( FORMT [3], "FIXED" ) )            /* fied as bin fixed,     */
    {
-    SYM [ISYM].TYPE = 'B';                        /* то устанавливаем тип   */
-						  /* идентификатора = 'B' и */
-    goto ODC11;                                   /* идем на продолжение об-*/
-						  /* работки, а             */
+    SYM [ISYM].TYPE = 'B';                        /* then set type          */
+						                                      /* of identifier = 'B' and*/
+    goto ODC11;                                   /* go to continue proces- */
+						                                      /* sing, and              */
    }
-  else                                            /* иначе                  */
+  else                                            /* otherwise              */
    {
-    SYM [ISYM].TYPE = 'U';                        /* устанавливаем тип иден-*/
-						  /* тификатора = 'U'  и    */
-    return 2;                                     /* завершаем программу    */
-						  /* по ошибке              */
+    SYM [ISYM].TYPE = 'U';                        /* set identifier type    */
+						                                      /* = 'U' and              */
+    return 2;                                     /* complete program       */
+						                                      /* on error               */
    }
 
-ODC11:                                            /* если идентификатор     */
-						  /* имеет начальную иници- */
-  if ( !strcmp ( FORMT [5], "INIT" )  )           /* ализацию, то запомина- */
-   strcpy ( SYM [ISYM++].INIT, FORMT [6] );       /* ем в табл. SYM это на- */
-						  /* чальное значение, а    */
-  else                                            /* иначе                  */
-   strcpy ( SYM [ISYM++].INIT, "0B" );            /* инициализируем иденти- */
-						  /* фикатор нулем          */
+ODC11:                                            /* if identifier          */
+						                                      /* has initial init-      */
+  if ( !strcmp ( FORMT [5], "INIT" )  )           /* ialization, then store */
+   strcpy ( SYM [ISYM++].INIT, FORMT [6] );       /* in SYM table this ini- */
+						                                      /* tial value, and        */
+  else                                            /* otherwise              */
+   strcpy ( SYM [ISYM++].INIT, "0B" );            /* initialize identifier  */
+						                                      /* with zero              */
 
-   return 0;                                      /* успешное завешение     */
-						  /* программы              */
+   return 0;                                      /* successful completion  */
+						                                      /* of program             */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OEN на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* OEN - "операт.ПЛ1-END" */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal OEN at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* OEN - "PL1 op. END"    */
 int OEN1 ()
  {
   char i = 0;
-  FORM ();                                        /* форматирование ПЛ1-опе-*/
-						  /* ратора END             */
+  FORM ();                                        /* formatting of PL1 oper-*/
+						                                      /* of operator END        */
 
-  for ( i = 0; i < ISYM; i++ )                    /* если вторй терм опера- */
-						  /* тора END записан в табл*/
-   {                                              /* SYM и его тип = "P",то:*/
+  for ( i = 0; i < ISYM; i++ )                    /* if second term of oper-*/
+						                                      /* ator END is in table   */
+   {                                              /* SYM and its type = "P",*/
     if ( !strcmp ( SYM [i].NAME, FORMT [1] ) &&
 		       (SYM [i].TYPE == 'P') &&
 		       strlen (SYM [i].NAME) ==
 			strlen ( FORMT [1] ) )
-     return 0;                                    /* успешное завершение    */
-						  /* программы              */
+     return 0;                                    /* successful completion  */
+						                                      /* of program             */
    }
 
-  return 1;                                       /* иначе завершение прог- */
-						  /* раммы по ошибке        */
+  return 1;                                       /* otherwise program comp-*/
+						                                      /* gram on error          */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OPA на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* OPA - "операт.присваи- */
-						  /* вания арифметический   */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal OPA at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* OPA - "assign op.      */
+                                                  /* arithmetic             */
 int OPA1 ()
  {
   return 0;
@@ -1109,35 +1109,35 @@ int OPA1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OPR на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* OPR - "операт.ПЛ1-PROC"*/
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal OPR at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* OPR - "PL1 op. PROC"   */
 int OPR1 ()
  {
-  FORM ();                                        /* форматируем оператор   */
-						  /* ПЛ1 PROC               */
+  FORM ();                                        /* format PL1 operator    */
+						                                      /* PL1 PROC               */
 
-  strcpy ( SYM [ISYM].NAME, FORMT [0] );          /* перепишем имя ПЛ1-прог-*/
-						  /* раммы в табл. SYM,     */
+  strcpy ( SYM [ISYM].NAME, FORMT [0] );          /* copy PL1-program name  */
+						                                      /* to SYM table,          */
 
-  SYM [ISYM].TYPE   = 'P';                        /* установим тип этого    */
-						  /* имени = 'P'            */
-  SYM [ISYM++].RAZR [0] = '\x0';                  /* установим разрядность  */
-						  /* равной 0               */
+  SYM [ISYM].TYPE   = 'P';                        /* set type of this       */
+						                                      /* name = 'P'             */
+  SYM [ISYM++].RAZR [0] = '\x0';                  /* set precision          */
+						                                      /* equal to 0             */
 
-  return 0;                                       /* успешное завершение    */
-						  /* программы              */
+  return 0;                                       /* successful completion  */
+						                                      /* of program             */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала PRO на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* PRO - "программа"      */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal PRO at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* PRO - "program"        */
 
 int PRO1 ()
  {
@@ -1146,11 +1146,11 @@ int PRO1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала RZR на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* RZR - "разрядность"    */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal RZR at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* RZR - "precision"      */
 
 int RZR1 ()
  {
@@ -1159,11 +1159,11 @@ int RZR1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала TEL на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* TEL - "тело программы" */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal TEL at */
+                                                  /* 1st pass. Here AVI is */
+                                                  /* TEL - "program body"   */
 
 int TEL1 ()
  {
@@ -1172,11 +1172,11 @@ int TEL1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала ZNK на пер-*/
-						  /* вом проходе.   Здесь   */
-						  /* ZNK - "знак операции"  */
+                                                  /* p r o g r a m          */
+                                                  /* semantic calculation   */
+                                                  /* of non-terminal ZNK at */
+                                                  /* 1st pass. Here AVI is  */
+                                                  /* ZNK - "operation sign" */
 
 int ZNK1 ()
  {
@@ -1185,158 +1185,158 @@ int ZNK1 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала AVI на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* AVI -   "арифм.выраж." */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal AVI at */
+						  /* 2nd pass. Here OPA is  */
+						  /* "arithm. expression"   */
 
 
 int AVI2 ()
  {
   char i;
-  FORM ();                                        /*форматируем правую часть*/
-						  /*арифметического ПЛ1-опе-*/
-						  /*ратора присваивания     */
+  FORM ();                                        /*format right part of    */
+                                                  /*arithmetic PL1 assign-  */
+                                                  /*ment operator           */
 
-  if ( IFORMT == 1 )                              /* если правая часть одно-*/
-     {                                            /* термовая, то:          */
-    for ( i = 0; i < ISYM; i++ )                  /* ищем этот терм в табли-*/
-     {                                            /* це имен  и             */
-      if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&/* если находим, то:      */
+  if ( IFORMT == 1 )                              /* if right part is one-  */
+     {                                            /* term, then:            */
+    for ( i = 0; i < ISYM; i++ )                  /* search this term in    */
+     {                                            /* names table and        */
+      if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&/* if found, then:        */
 	   strlen ( SYM [i].NAME ) ==
 			      strlen ( FORMT [0] )
 	 )
        {
-	  if ( SYM [i].TYPE == 'B' )              /* в случае типа=bin fixed*/
+	  if ( SYM [i].TYPE == 'B' )              /* if type=bin fixed      */
 	   {
 
-	    if ( strcmp ( SYM [i].RAZR, "15" )    /* и разрядности <= 15    */
+	    if ( strcmp ( SYM [i].RAZR, "15" )    /* and precision <= 15    */
 					     <= 0 )
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* формируем код ассембле-*/
-					"LH", 2 );/* ровской операции LH,   */
+	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* form assembler op.     */
+					"LH", 2 );                        /* code LH,               */
 	    else
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* а при разрядности >15  */
-					 "L", 1 );/* формируем код ассембле-*/
-						  /* ровской операции L     */
+	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* and for precision >15  */
+					 "L", 1 );                        /* form assembler op.     */
+						                                /* code L                 */
 
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       формируем        */
-					"RRAB," );/*       первый  и        */
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* второй операнды ассемб-*/
-				       FORMT [0]);/* леровской операции     */
+	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       form             */
+					"RRAB," );                        /*       1st and          */
+	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* 2nd operands of assem- */
+				       FORMT [0]);                  /* bler operation         */
 
-	    ASS_CARD._BUFCARD.OPERAND [ strlen    /* вставляем разделитель  */
+	    ASS_CARD._BUFCARD.OPERAND [ strlen    /* insert separator       */
 	     ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
 
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* и построчный коментарий*/
-	     "Загрузка переменной в регистр", 29 );
+	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* and line comment       */
+	     "Load variable to register", 29 );
 
-	    ZKARD ();                             /* запомнить операцию ас- */
-						  /* семблера  и            */
-	    return 0;                             /* завершить программу    */
+	    ZKARD ();                             /* store assembler op.    */
+						                                /* and                    */
+	    return 0;                             /* complete program       */
 	   }
 	  else
-	   return 3;                              /* если тип терма не bin  */
-						  /* fixed,то выход по ошиб-*/
-						  /* ке                     */
+	   return 3;                              /* if term type not bin   */
+                                            /* fixed, exit on error   */
+                                            /*                        */
        }
      }
-    return 4;                                     /* если терм-идентификатор*/
-						  /* неопределен, то выход  */
-						  /* по ошибке              */
+    return 4;                                     /* if term-identifier     */
+                                                  /* undefined, exit        */
+                                                  /* on error               */
    }
-  else                                            /* если правая часть ариф-*/
-						  /* метического выражения  */
-						  /* двухтермовая, то:      */
+  else                                            /* if right part of arith-*/
+                                                  /* metic expression       */
+                                                  /* is two-term, then:     */
    {
-    for ( i = 0; i < ISYM; i++ )                  /* если правый терм ариф- */
-     {                                            /* метического выражения  */
-      if ( !strcmp ( SYM [i].NAME,                /*определен в табл.SYM,то:*/
+    for ( i = 0; i < ISYM; i++ )                  /* if right term of arith-*/
+     {                                            /* metic expression       */
+      if ( !strcmp ( SYM [i].NAME,                /*defined in SYM table,   */
 			    FORMT [IFORMT-1] )  &&
 	   strlen ( SYM [i].NAME ) ==
 		       strlen ( FORMT [IFORMT-1] )
 	 )
        {
-	  if ( SYM [i].TYPE == 'B' )              /* если тип правого опе-  */
-	   {                                      /* ранда bin fixed, то:   */
+	  if ( SYM [i].TYPE == 'B' )              /* if right operand type  */
+	   {                                      /* bin fixed, then:       */
 
-	    if ( STROKA [ DST [I2].DST4 -         /* если знак опер."+",то: */
+	    if ( STROKA [ DST [I2].DST4 -         /* if operand sign "+",   */
 	     strlen( FORMT [IFORMT-1] ) ] == '+' )
 	     {
-	      if ( strcmp ( SYM [i].RAZR, "15" )  /* если разрядность прав. */
-					    <= 0 )/* операнда <= 15, то:    */
+	      if ( strcmp ( SYM [i].RAZR, "15" )  /* if right operand prec. */
+					    <= 0 )                        /* <= 15, then:           */
 	       memcpy ( ASS_CARD._BUFCARD.OPERAC,
-					"AH", 2 );/* формируем код ассембле-*/
-	      else                                /* ровской операции "AH",а*/
+					"AH", 2 );                        /* form assembler op.*/
+	      else                                /* code "AH", and*/
 	       memcpy ( ASS_CARD._BUFCARD.OPERAC,
-					 "A", 1 );/* иначе - "A"            */
+					 "A", 1 );                        /* otherwise - "A"            */
 	     }
 
 	    else
 
 	     {
-	      if ( STROKA [ DST [I2].DST4 -       /* если же знак операции  */
-		 strlen ( FORMT [IFORMT-1] ) ] == /* арифметического выра-  */
-					     '-' )/* жения "-", то:         */
+	      if ( STROKA [ DST [I2].DST4 -       /* if operation sign          */
+		 strlen ( FORMT [IFORMT-1] ) ] ==       /* of arithmetic              */
+					     '-' )                        /* expression "-", then:      */
 
 	       {
-		if ( strcmp ( SYM [i].RAZR, "15" )/* при разрядности ариф-  */
-					    <= 0 )/* метич.выраж.<= 15      */
-		 memcpy( ASS_CARD._BUFCARD.OPERAC,/* формируем код ассембле-*/
-					"SH", 2 );/* ровской операции "SH",F*/
+		if ( strcmp ( SYM [i].RAZR, "15" )      /* if arithmetic              */
+					    <= 0 )                        /* expr. precision <= 15      */
+		 memcpy( ASS_CARD._BUFCARD.OPERAC,      /* form assembler op.         */
+					"SH", 2 );                        /* code "SH",                 */
 		else
-		 memcpy( ASS_CARD._BUFCARD.OPERAC,/* иначе - "S"            */
+		 memcpy( ASS_CARD._BUFCARD.OPERAC,      /* otherwise - "S"            */
 					 "S", 1 );
 	       }
 
 	      else
 
-	       return 5;                          /* если знак операции не  */
-						  /* "+" и не "-", то завер-*/
-						  /* шение  программы  по   */
-						  /* ошибке                 */
+	       return 5;                          /* if operation sign not       */
+						                                /* "+" or "-", then            */
+                                            /* program completion on       */
+                                            /* error                       */
 	     }
-						  /* формируем:             */
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /* - первый операнд ассем-*/
-					"RRAB," );/*блеровской операции;    */
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* - второй операнд ассем-*/
-			       FORMT [IFORMT-1] );/*блеровской операции;    */
+						                                /* form:                       */
+	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /* - 1st operand of assem-     */
+					"RRAB," );                        /* bler operation;             */
+	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* - 2nd operand of assem-     */
+			       FORMT [IFORMT-1] );            /* bler operation;             */
 	    ASS_CARD._BUFCARD.OPERAND [ strlen
-		  ( ASS_CARD._BUFCARD.OPERAND )] =/* - разделяющий пробел;  */
+		  ( ASS_CARD._BUFCARD.OPERAND )] =      /* - separator space;          */
 					      ' ';
 	    memcpy ( ASS_CARD._BUFCARD.COMM,
-	   "Формирование промежуточного значения",/* - построчный коментарий*/
+	   "Form intermediate value",             /* - line comment              */
 					     36 );
-	    ZKARD ();                             /* запоминание ассембле-  */
-						  /* ровской операции       */
+	    ZKARD ();                             /* store assembler             */
+						                                /* operation                   */
 
-	    return 0;                             /* успешное завершение    */
-						  /* пограммы               */
+	    return 0;                             /* successful completion       */
+						                                /* of program                  */
 	   }
 	  else
-	   return 3;                              /* если тип правого опе-  */
-						  /* ранда арифметического  */
-						  /* выражения не bin fixed,*/
-						  /* то завершение програм- */
-						  /* мы по ошибке           */
+	   return 3;                              /* if right operand type       */
+                                            /* of arithmetic               */
+                                            /* expression not bin fixed,   */
+                                            /* then program                */
+                                            /* tion on error               */
        }
      }
-    return 4;                                     /* если правый операнд    */
-						  /* арифметического выраже-*/
-						  /*ния не определен в табл.*/
-						  /* SYM, то завершить про- */
-						  /* грамму по ошибке       */
+    return 4;                               /* if right operand       */
+                                            /* of arithmetic          */
+                                            /*expression not defined  */
+                                            /* in SYM, then complete  */
+                                            /* program on error       */
    }
 
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала BUK на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* BUK -   "буква"        */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal BUK at */
+						  /* 2nd pass. Here OPA is  */
+						  /* BUK -   "letter"        */
 
 int BUK2 ()
  {
@@ -1345,11 +1345,11 @@ int BUK2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала CIF на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* CIF -   "цифра"        */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal CIF at */
+						  /* 2nd pass. Here OPA is  */
+						  /* CIF -   "digit"        */
 
 int CIF2 ()
  {
@@ -1359,11 +1359,11 @@ int CIF2 ()
 /*..........................................................................*/
 
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IDE на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* IDE -   "идентификатор"*/
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IDE at */
+						  /* 2nd pass. Here OPA is  */
+						  /* IDE -   "identifier"   */
 
 int IDE2 ()
  {
@@ -1373,11 +1373,11 @@ int IDE2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IPE на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* IPE - "имя переменной" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IPE at */
+						  /* 2nd pass. Here OPA is  */
+						  /* IPE - "variable name"  */
 
 int IPE2 ()
  {
@@ -1386,11 +1386,11 @@ int IPE2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала IPR на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* IPR -   "имя программы" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal IPR at */
+						  /* 2nd pass. Here OPA is  */
+						  /* IPR -   "program name" */
 
 int IPR2 ()
  {
@@ -1399,11 +1399,11 @@ int IPR2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала LIT на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* LIT -   "литерал"      */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal LIT at */
+						  /* 2nd pass. Here OPA is  */
+						  /* LIT -   "literal"      */
 
 int LIT2 ()
  {
@@ -1412,11 +1412,11 @@ int LIT2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала MAN на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* MAN -   "мантисса"     */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal MAN at */
+						  /* 2nd pass. Here OPA is  */
+						  /* MAN -   "mantissa"     */
 
 int MAN2 ()
  {
@@ -1425,11 +1425,11 @@ int MAN2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала ODC на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* ODC - "операт.ПЛ1- DCL"*/
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal ODC at */
+						  /* 2nd pass. Here OPA is  */
+						  /* ODC - "PL1 op. DCL"    */
 
 int ODC2 ()
  {
@@ -1438,268 +1438,268 @@ int ODC2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OEN на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* OEN - "операт.ПЛ1-END" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal OEN at */
+						  /* 2nd pass. Here OPA is  */
+						  /* OEN - "PL1 op. END"    */
 
-						  /* программа    формирует */
-						  /* эпилог ассемблеровского*/
-						  /* эквивалента ПЛ1-прог-  */
-						  /* раммы                  */
+						  /* program forms          */
+						  /* epilogue of assembler  */
+						  /* equivalent of PL1-prog-*/
+						  /* ram                    */
 int OEN2 ()
  {
   char RAB [20];
   char i = 0;
-  FORM ();                                        /* форматируем ПЛ1-опера- */
-						  /* тор END                */
+  FORM ();                                        /* format PL1-operator    */
+						  /* END                    */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BCR", 3 );  /* формируем код безуслов-*/
-						  /*ного возврата управления*/
-						  /* в вызывающую программу */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BCR", 3 );  /* form unconditional   */
+						  /*return control code     */
+						  /* to calling program     */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,14", 5 );/* операнды команды и     */
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,14", 5 );/* command operands and   */
 
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* поле построчного комен-*/
-		       "Выход из программы", 18 );/* тария                  */
+  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment field     */
+		       "Exit from program", 18 );
 
-  ZKARD ();                                       /* запомнить опреацию     */
-						  /* Ассемблера             */
+  ZKARD ();                                       /* store operation        */
+						  /* of Assembler           */
 
-						  /* далее идет блок форми- */
-						  /* рования декларативных  */
-						  /* псевдоопераций DC для  */
-						  /* каждого идентификатора,*/
-						  /* попавшего в табл.SYM   */
+						  /* next is formation block*/
+						  /* of declarative         */
+						  /* DC pseudo-ops for      */
+						  /* each identifier that   */
+						  /* got into SYM table     */
   for ( i = 0; i < ISYM; i++ )
-   {                                              /* если строка табл.SYM   */
-    if ( isalpha ( SYM [i].NAME [0] ) )           /* содержит идентификатор,*/
-						  /* т.е.начинается с буквы,*/
-     {                                            /* то:                    */
-      if ( SYM [i].TYPE == 'B' )                  /* если тип оператора bin */
-						  /* fixed, то:             */
+   {                                              /* if SYM table row       */
+    if ( isalpha ( SYM [i].NAME [0] ) )           /* contains identifier,   */
+						  /* i.e.starts with letter,*/
+     {                                            /* then:                  */
+      if ( SYM [i].TYPE == 'B' )                  /* if operator type bin   */
+						  /* fixed, then:           */
        {
-	strcpy ( ASS_CARD._BUFCARD.METKA,         /* пишем идентификатор в  */
-				  SYM [i].NAME ); /* поле метки псевдоопера-*/
-						  /* ции DC                 */
+	strcpy ( ASS_CARD._BUFCARD.METKA,         /* write identifier to    */
+				  SYM [i].NAME ); /* label field of pseudo- */
+						  /* op DC                  */
 	ASS_CARD._BUFCARD.METKA [ strlen
-	     ( ASS_CARD._BUFCARD.METKA ) ] = ' '; /* пишем разделитель полей*/
+	     ( ASS_CARD._BUFCARD.METKA ) ] = ' '; /* write field separator*/
 
-	memcpy ( ASS_CARD._BUFCARD.OPERAC,        /* пишем код псевдоопера- */
-				       "DC", 2 ); /* ции DC                 */
+	memcpy ( ASS_CARD._BUFCARD.OPERAC,        /* write pseudo-op code   */
+				       "DC", 2 ); /* DC                     */
 
-	if ( strcmp ( SYM [i].RAZR, "15" ) <= 0 ) /* формируем операнды псе-*/
-						  /* вдооперации DC         */
-	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* для случая полуслова   */
+	if ( strcmp ( SYM [i].RAZR, "15" ) <= 0 ) /* form pseudo-op operands*/
+						  /* pseudo-op DC           */
+	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* for halfword case      */
 					 "H\'" );
-	else                                      /* или                    */
+	else                                      /* or                     */
 
-	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* для случая слова       */					 "F\'" );
+	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* for word case          */					 "F\'" );
 
 //Dos command
-//	strcat ( ASS_CARD._BUFCARD.OPERAND,       /* формируем цифровую     */
-//		 ltoa ( VALUE (SYM [i].INIT),     /* часть операнда псевдо- */
-//				 &RAB [0], 10) ); /* операции,              */
+//	strcat ( ASS_CARD._BUFCARD.OPERAND,       /* form numeric           */
+//		 ltoa ( VALUE (SYM [i].INIT),     /* part of pseudo-op      */
+//				 &RAB [0], 10) ); /* operand,               */
 //let's do that in Unix!
 	strcat(ASS_CARD._BUFCARD.OPERAND, gcvt(VALUE(SYM[i].INIT), 10, &RAB[0]));
-	ASS_CARD._BUFCARD.OPERAND [ strlen        /* замыкающий апостроф    */
-	 ( ASS_CARD._BUFCARD.OPERAND ) ] = '\'';  /*          и             */
+	ASS_CARD._BUFCARD.OPERAND [ strlen        /* closing apostrophe     */
+	 ( ASS_CARD._BUFCARD.OPERAND ) ] = '\'';  /*          and             */
 
-	memcpy ( ASS_CARD._BUFCARD.COMM,          /* поле построчного комен-*/
-		 "Определение переменной", 22 );  /* тария                  */
+	memcpy ( ASS_CARD._BUFCARD.COMM,          /* line comment field     */
+		 "Variable definition", 22 );
 
-	ZKARD ();                                 /* запомнить операцию     */
-						  /*    Ассемблера          */
+	ZKARD ();                                 /* store operation        */
+						  /*    of Assembler        */
        }
      }
    }
-						  /* далее идет блок декла- */
-						  /* ративных ассемблеровс- */
-						  /* ких EQU-операторов, оп-*/
-						  /* ределяющих базовый и   */
-						  /* рабочий регистры общего*/
-						  /* назначения             */
+						  /* next is declarative    */
+						  /* assembler EQU-ops      */
+						  /* defining base and      */
+						  /* working registers      */
+						  /* of general purpose     */
+						  /*                        */
 
-  memcpy ( ASS_CARD._BUFCARD.METKA, "RBASE", 5 ); /* формирование EQU-псев- */
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* дооперации определения */
-  memcpy ( ASS_CARD._BUFCARD.OPERAND, "15", 2 );  /* номера базового регист-*/
-						  /* ра общего назначения   */
-						  /*           и            */
-  ZKARD ();                                       /* запоминание ее         */
+  memcpy ( ASS_CARD._BUFCARD.METKA, "RBASE", 5 ); /* form EQU-pseudo-op   */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* for working register   */
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "15", 2 );  /* number 15              */
+						  /* of general purpose     */
+						  /*                        */
+  ZKARD ();                                       /* store it               */
 
-  memcpy ( ASS_CARD._BUFCARD.METKA, "RRAB", 4 );  /* формирование EQU-псев- */
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* дооперации определения */
-  memcpy ( ASS_CARD._BUFCARD.OPERAND, "5", 1 );   /* номера базового регист-*/
-						  /* ра общего назначения   */
-						  /*            и           */
-  ZKARD ();                                       /* запоминание ее         */
+  memcpy ( ASS_CARD._BUFCARD.METKA, "RRAB", 4 );  /* form EQU-pseudo-op   */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* for working register   */
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "5", 1 );   /* number 5               */
+						  /* of general purpose     */
+						  /*                        */
+  ZKARD ();                                       /* store it               */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "END", 3 );  /* формирование кода ас-  */
-						  /* семблеровской псевдо-  */
-						  /* операции END,          */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "END", 3 );  /* form assembler         */
+						  /* pseudo-op END code,    */
+						  /*                        */
   i = 0;
 
-  while ( FORMT [1][i] != '\x0' )                 /* ее операнда            */
-   ASS_CARD._BUFCARD.OPERAND [i] = FORMT [1][i++];/*         и              */
+  while ( FORMT [1][i] != '\x0' )                 /* its operand            */
+   ASS_CARD._BUFCARD.OPERAND [i] = FORMT [1][i++];/*         and            */
 
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* построчного коментария */
-			  "Конец программы", 15 );
+  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment           */
+			  "End of program", 15 );
 
-  ZKARD ();                                       /* запоминание псевдоопе- */
-						  /* рации                  */
+  ZKARD ();                                       /* store pseudo-op        */
+						  /*                        */
 
-  return 0;                                       /* завершение программы   */
+  return 0;                                       /* program completion       */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OPA на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* OPA - "операт.присваи- */
-						  /* вания арифметический   */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal OPA at */
+						  /* 2nd pass. Here OPA is*/
+						  /* OPA - "assign op.    */
+						  /* arithmetic           */
 
 int OPA2 ()
  {
   int i;
 
-  FORM ();                                        /*форматируем ПЛ1-оператор*/
-						  /*присваивания арифметич. */
+  FORM ();                                        /*format PL1 operator     */
+						  /*of arithmetic assign.   */
 
   for ( i = 0; i < ISYM; i++ )
-   {                                              /* если идентификатор пра-*/
-						  /* вой части оператора оп-*/
-    if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&  /* ределен ранее через    */
-	 strlen ( SYM [i].NAME ) ==               /* оператор DCL, то:      */
+   {                                              /* if right part identif. */
+						  /* defined earlier via    */
+    if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&  /* DCL operator, then:    */
+	 strlen ( SYM [i].NAME ) ==               /*                        */
 			     strlen ( FORMT [0] )
        )
        {
-	  if ( SYM [i].TYPE == 'B' )              /* если этот идентификатор*/
-	   {                                      /* имеет тип bin fixed,то:*/
+	  if ( SYM [i].TYPE == 'B' )              /* if this identifier     */
+	   {                                      /* has type bin fixed,    */
 
-	    if ( strcmp ( SYM [i].RAZR, "15" )    /* если bin fixed (15),то:*/
+	    if ( strcmp ( SYM [i].RAZR, "15" )    /* if bin fixed (15),     */
 					    <= 0 )
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* сформировать команду   */
-				       "STH", 3 );/* записи полуслова       */
+	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* form command           */
+				       "STH", 3 );/* for halfword write     */
 
-	    else                                  /* иначе:                 */
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* команду записи слова   */
+	    else                                  /* otherwise:             */
+	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* command for word write */
 					"ST", 2 );
 
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       доформировать    */
-					"RRAB," );/*          операнды      */
+	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       complete         */
+					"RRAB," );/*          operands      */
 
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /*           команды      */
+	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /*           of command   */
 				      FORMT [0]) ;
 
-	    ASS_CARD._BUFCARD.OPERAND [ strlen    /*              и         */
+	    ASS_CARD._BUFCARD.OPERAND [ strlen    /*              and       */
 	    ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
 
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* построчный коментарий  */
-	    "Формирование значения арифм.выражения",
+	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* line comment           */
+	    "Form arithmetic expression value",
 					     37 );
-	    ZKARD ();                             /* запомнить операцию     */
-						  /* Ассемблера  и          */
-	    return 0;                             /* завершить программу    */
+	    ZKARD ();                             /* store operation        */
+						  /* of Assembler and       */
+	    return 0;                             /* complete program       */
 	   }
 
-	  else                                    /* если идентификатор не  */
-						  /* имеет тип bin fixed,то:*/
-	   return 3;                              /* завершение с диагности-*/
-						  /* кой ошибки             */
+	  else                                    /* if identifier does not */
+						  /* have type bin fixed,   */
+	   return 3;                              /* completion with diagn. */
+						  /* of error               */
        }
    }
-  return 4;                                       /* если идентификатор ра- */
-						  /* нее не определен через */
-						  /* ПЛ1-оператор DCL,то за-*/
-						  /* вершение с диагностикой*/
-						  /* ошибки                 */
+  return 4;                                       /* if identifier not */
+						  /* defined earlier via */
+						  /* PL1 DCL operator, then*/
+						  /* completion with diagn.*/
+						  /* error                 */
 
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала OPR на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* OPR - "операт.ПЛ1-PROC"*/
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal OPR at*/
+						  /* 2nd pass. Here OPA is*/
+						  /* OPR - "PL1 op. PROC" */
 
-						  /* программа    формирует */
-						  /* пролог ассемблеровского*/
-						  /* эквивалента  исходной  */
-						  /* ПЛ1-программы          */
+						  /* program forms          */
+						  /* prologue of assembler*/
+						  /* equivalent of source  */
+						  /* PL1 program          */
 int OPR2 ()
  {
   char i = 0;
-  FORM ();                                        /* форматируем оператор   */
-						  /* ПЛ1 - "начало процедур-*/
-						  /* ного блока"            */
+  FORM ();                                        /* format PL1 operator    */
+						  /* PL1 - "start of proced-*/
+						  /* ure block"            */
   while ( FORMT [0][i] != '\x0' )
-   ASS_CARD._BUFCARD.METKA [i++] = FORMT [0][i];  /* нулевой терм используем*/
-						  /* как метку в START-псев-*/
-						  /* дооперации Ассемблера  */
+   ASS_CARD._BUFCARD.METKA [i++] = FORMT [0][i];  /* use 0 term as label*/
+						  /* in START-pseudo-op of*/
+						  /* Assembler  */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "START", 5 );/* достраиваем код и опе- */
-  memcpy ( ASS_CARD._BUFCARD.OPERAND, "0", 1 );   /* ранды  в  START-псевдо-*/
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* операции Ассемблера    */
-		      "Начало программы", 16 );
-  ZKARD ();                                       /* запоминаем карту Ассем-*/
-						  /* блера                  */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "START", 5 );/* complete code and oper- */
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "0", 1 );   /* ands in START-pseudo-op*/
+  memcpy ( ASS_CARD._BUFCARD.COMM,                /* of Assembler    */
+		      "Start of program", 16 );
+  ZKARD ();                                       /* store Assembler card*/
+						  /*                   */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 ); /* формируем BALR-операцию*/
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* Ассемблера             */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 ); /* form BALR-operation*/
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* Assembler             */
 				  "RBASE,0", 7 );
   memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Загрузить регистр базы", 22 );
-  ZKARD ();                                       /* и запоминаем ее        */
+		  "Load base register", 22 );
+  ZKARD ();                                       /* and store it        */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );/* формируем USING-псевдо-*/
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* операцию Ассемблера    */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );/* form USING-pseudo-op*/
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* of Assembler    */
 				   "*,RBASE", 7 );
   memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Назначить регистр базой", 23 );
-  ZKARD ();                                       /* и запоминаем ее        */
+		  "Set register as base", 23 );
+  ZKARD ();                                       /* and store it        */
 
-  return 0;                                       /* завершить подпрограмму */
+  return 0;                                       /* complete subroutine */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала PRO на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* PRO - "программа"      */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal PRO at*/
+						  /* 2nd pass. Here OPA is*/
+						  /* PRO - "program"        */
 
-int PRO2 ()                                       /*прогр.формирует выходной*/
- {                                                /*файл                    */
+int PRO2 ()                                       /*program forms output*/
+ {                                                /*file                    */
 
-  FILE *fp;                                       /*набор                   */
-						  /*рабочих                 */
-						  /*переменных              */
+  FILE *fp;                                       /*set of working                   */
+						  /*variables                 */
+						  /*              */
 
-  strcat ( NFIL , "ass" );                        /*сформировать имя выход- */
-						  /*ного файла              */
+  strcat ( NFIL , "ass" );                        /*form output file name */
+						  /*file              */
 
-  if ( (fp = fopen ( NFIL , "wb" )) == NULL )     /*при неудачн.открыт.ф-ла */
-   return (7);                                    /* сообщение об ошибке    */
+  if ( (fp = fopen ( NFIL , "wb" )) == NULL )     /*on unsuccessful open */
+   return (7);                                    /* error message    */
 
-  else                                            /*иначе:                  */
-   fwrite (ASSTXT, 80 , IASSTXT , fp);            /* формируем тело об.файла*/
-  fclose ( fp );                                  /*закрываем об'ектный файл*/
-  return ( 0 );                                   /*завершить полдпрограмму */
+  else                                            /*otherwise:                  */
+   fwrite (ASSTXT, 80 , IASSTXT , fp);            /* form object file body*/
+  fclose ( fp );                                  /*close object file*/
+  return ( 0 );                                   /*complete subroutine */
  }
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала RZR на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* RZR - "разрядность"    */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal RZR at*/
+						  /* 2nd pass. Here OPA is*/
+						  /* RZR - "precision"      */
 
 int RZR2 ()
  {
@@ -1708,11 +1708,11 @@ int RZR2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала TEL на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* TEL - "тело программы" */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal TEL at*/
+						  /* 2nd pass. Here OPA is*/
+						  /* TEL - "program body"   */
 
 int TEL2 ()
  {
@@ -1721,11 +1721,11 @@ int TEL2 ()
 
 /*..........................................................................*/
 
-						  /* п р о г р а м м а      */
-						  /* семантич. вычисления   */
-						  /* нетерминала ZNK на вто-*/
-						  /* ром проходе.   Здесь   */
-						  /* ZNK - "знак операции"  */
+						  /* p r o g r a m          */
+						  /* semantic calculation   */
+						  /* of non-terminal ZNK at*/
+						  /* 2nd pass. Here OPA is*/
+						  /* ZNK - "operation sign" */
 
 int ZNK2 ()
  {
@@ -1734,118 +1734,118 @@ int ZNK2 ()
 
 /*..........................................................................*/
 
-						  /*  п р о г р а м м а     */
-						  /* управления абстрактной */
-						  /* ЭВМ  -  семантического */
-						  /* вычислителя, интерпре- */
-						  /* тирующего абстрактную  */
-						  /* программу, сформирован-*/
-						  /* ную синтаксическим ана-*/
-						  /* лизатором в стеке дос- */
-						  /* тигнутых целей.        */
+						  /*  p r o g r a m     */
+						  /* of abstract machine */
+						  /* control - semantic */
+						  /* calculator interpreting */
+						  /* abstract program formed  */
+						  /* by syntax analyzer in*/
+						  /* achievements stack.*/
+						  /* The algorithm essence */
+						  /* is sequential        */
 
-						  /* Суть алгоритма управле-*/
-						  /*ния  в  последовательной*/
-int gen_COD ()                                    /*интерпретации строк сте-*/
- {                                                /*ка достижений  в направ-*/
-  int NOSH;                                       /*лении от дна к вершине. */
+						  /* interpretation of*/
+						  /*achievements stack rows*/
+int gen_COD ()                                    /*from bottom to top.*/
+ {                                                /*Each row is treated as*/
+  int NOSH;                                       /*abstract machine command */
 
-  int (* FUN [NNETRM][2]) () =                    /*При этом каждая строка  */
-   {                                              /*воспринимается как кома-*/
-     {/*    1  */    AVI1, AVI2 },                /*нда абстрактной ЭВМ со  */
-     {/*    2  */    BUK1, BUK2 },                /*следующими полями:      */
+  int (* FUN [NNETRM][2]) () =                    /*with following fields:  */
+   {                                              /*- DST.DST1 - op. code;*/
+     {/*    1  */    AVI1, AVI2 },                /*- DST.DST2 - left bnd.  */
+     {/*    2  */    BUK1, BUK2 },                /*of interpreted source      */
      {/*    3  */    CIF1, CIF2 },
-     {/*    4  */    IDE1, IDE2 },		  /* - DST.DST1 - код опера-*/
-     {/*    5  */    IPE1, IPE2 },      	  /*ции;                    */
+     {/*    4  */    IDE1, IDE2 },		  /*text fragment;*/
+     {/*    5  */    IPE1, IPE2 },      	  /*- DST.DST4 - right bnd.                    */
      {/*    6  */    IPR1, IPR2 },
-     {/*    7  */    LIT1, LIT2 },            	  /* - DST.DST2 - левая гра-*/
-     {/*    8  */    MAN1, MAN2 },		  /*ница интерпретируемого  */
-     {/*    9  */    ODC1, ODC2 },		  /*фрагмента исх.текста;   */
+     {/*    7  */    LIT1, LIT2 },            	  /*- DST.DST2 - left bnd.*/
+     {/*    8  */    MAN1, MAN2 },		  /*of interpreted source  */
+     {/*    9  */    ODC1, ODC2 },		  /*text fragment. */
      {/*   10  */    OEN1, OEN2 },
-     {/*   11  */    OPA1, OPA2 },		  /* - DST.DST4 -правая гра-*/
-     {/*   12  */    OPR1, OPR2 },		  /*ница интерпретируемого  */
-     {/*   13  */    PRO1, PRO2 },		  /*фрагмента исх.текста.   */
+     {/*   11  */    OPA1, OPA2 },		  /**/
+     {/*   12  */    OPR1, OPR2 },		  /*of interpreted source  */
+     {/*   13  */    PRO1, PRO2 },		  /*text fragment. */
      {/*   14  */    RZR1, RZR2 },
      {/*   15  */    TEL1, TEL2 },
      {/*   16  */    ZNK1, ZNK2 }
    };
 
-  for ( I2 = 0; I2 < L; I2++ )                    /* организация первого    */
-   if ( ( NOSH = FUN [                            /* прохода семантического */
-		      numb ( DST [I2].DST1, 3 )   /* вычисления             */
+  for ( I2 = 0; I2 < L; I2++ )                    /* 1st pass organization    */
+   if ( ( NOSH = FUN [                            /* of semantic calculation */
+		      numb ( DST [I2].DST1, 3 )   /* calculation             */
 		     ][0] ()
 	) != 0
       )
-    return (NOSH);                                /* выход из программы     */
-						  /* по ошибке              */
+    return (NOSH);                                /* program exit     */
+						  /* on error               */
 
-  for ( I2 = 0; I2 < L; I2++ )                    /* организация второго    */
-   if ( ( NOSH = FUN [                            /* прохода семантического */
-		      numb ( DST [I2].DST1, 3 )   /* вычисления             */
+  for ( I2 = 0; I2 < L; I2++ )                    /* 2nd pass organization    */
+   if ( ( NOSH = FUN [                            /* of semantic calculation */
+		      numb ( DST [I2].DST1, 3 )   /* calculation             */
 		     ][1] ()
 	) != 0
       )
-    return (NOSH);                                /* выход из программы     */
-						  /* по ошибке              */
+    return (NOSH);                                /* program exit     */
+						  /* on error               */
 
-  return 0;                                       /* успешное завершение    */
-						  /* программы              */
+  return 0;                                       /* successful completion  */
+						  /* of program             */
  }
 
 /*..........................................................................*/
 
-						  /*  п р о г р а м м а,    */
-						  /* организующая последова-*/
-						  /* тельную обработку ис-  */
-						  /* ходного текста:        */
-						  /* - лексич.анализатором; */
-						  /* - синтаксич.анализат.; */
-						  /* - семантич.вычислителем*/
+						  /*  p r o g r a m,    */
+						  /* organizing sequential*/
+						  /* processing of source:  */
+						  /* - lexical analyzer;        */
+						  /* - syntax analyzer; */
+						  /* - semantic calculator */
+						  /* */
 int main (int argc, char **argv )
- {                                                /* рабочие переменные:    */
-  FILE *fp;                                       /* - указатель на файл;   */
-  char *ptr=argv[1];                              /* - указатель на первый  */
-						  /*параметр командной стр. */
+ {                                                /* working variables:    */
+  FILE *fp;                                       /* - file pointer;   */
+  char *ptr=argv[1];                              /* - pointer to 1st  */
+						  /*command line parameter */
 
-  strcpy ( NFIL, ptr );                           /*изъять имя транслируемой*/
-						  /*программы из командной  */
-						  /*строки в рабочее поле   */
+  strcpy ( NFIL, ptr );                           /*get translated program*/
+						  /*name from command line  */
+						  /*to working field   */
 
-						  /*проверяем корректность  */
-						  /*командной строки        */
+						  /*check command line  */
+						  /*correctness        */
   if ( argc != 2 )
 
-   {                                              /* по ошибке в командн.стр*/
-    printf ("%s\n", "Ошибка в командной строке"); /* выдать диагностику и   */
-    return;                                       /* завершить трансляцию   */
+   {                                              /* on command line error*/
+    printf ("%s\n", "Error in command line"); /* output diagnosis and   */
+    return;                                       /* complete translation   */
    }
 
-						  /* проверка типа исх.файла*/
+						  /* check source file type*/
   if
    (
-    strcmp ( &NFIL [ strlen ( NFIL )-3 ], "pli" ) /* если тип не "pli", то: */
+    strcmp ( &NFIL [ strlen ( NFIL )-3 ], "pli" ) /* if type not "pli", then: */
    )
 
    {
-    printf ( "%s\n",                              /* выдать диагностику и   */
-     "Неверный тип файла с исходным текстом" );
-    return;                                       /* завершить трансляцию   */
+    printf ( "%s\n",                              /* output diagnosis and   */
+     "Invalid file type with source text" );
+    return;                                       /* complete translation   */
    }
 
 
-  else                                            /* если тип файла "pli",то*/
+  else                                            /* if file type "pli", then*/
 
-   {                                              /*пытаемся открыть файл и */
-    if ( (fp = fopen ( NFIL , "rb" )) == NULL )   /*при неудачн.открыт.ф-ла */
-						  /* сообщение об ошибке и  */
+   {                                              /*try to open file and */
+    if ( (fp = fopen ( NFIL , "rb" )) == NULL )   /*on unsuccessful open */
+						  /* error message and  */
      {
       printf ( "%s\n",
-       "Не найден файл с исходным текстом" );
-      return;                                     /* завершение трансляции  */
+       "Source text file not found" );
+      return;                                     /* complete translation  */
      }
 
-    else                                          /* иначе:                 */
-						  /* пишем файл в массив    */
+    else                                          /* otherwise:                 */
+						  /* write file to array    */
 						  /*  ISXTXT                */
      {
       for ( NISXTXT = 0; NISXTXT <= MAXNISXTXT; NISXTXT++ )
@@ -1853,129 +1853,129 @@ int main (int argc, char **argv )
        {
 	if ( !fread ( ISXTXT [NISXTXT], 80, 1, fp ) )
 	 {
-	  if ( feof ( fp ) )                      /* в конце файла идем на  */
-	   goto main1;                            /* метку  main1           */
+	  if ( feof ( fp ) )                      /* at file end go to  */
+	   goto main1;                            /* main1 label           */
 
-	  else                                    /* при сбое чтения        */
-	   {                                      /* выдаем диагностику     */
+	  else                                    /* on read error        */
+	   {                                      /* output diagnosis     */
 	    printf ( "%s\n",
-	     "Ошибка при чтении фыйла с исх.текстом" );
-	    return;                               /* и завершаем трансляцию */
+	     "Error reading source text file" );
+	    return;                               /* and complete translation */
 	   }
 	 }
        }
 
-      printf ( "%s\n",                            /*при пеерполнении массива*/
-       "Переполнение буфера чтения исх.текста" ); /* ISXTXT выдать диагн.   */
-      return;                                     /* и завершить трансляцию */
+      printf ( "%s\n",                            /*on array ISXTXT overflow*/
+       "Source text read buffer overflow" ); /* output diagnosis   */
+      return;                                     /* and complete translation */
      }
 
    }
 
-main1:                                            /* по завершении чтения   */
-						  /* исх.файла формируем    */
-   fclose ( fp );                                 /* префикс имени выходного*/
-   NFIL [ strlen ( NFIL )-3 ] = '\x0';            /* Ассемблеровского файла */
+main1:                                            /* after reading completion   */
+						  /* of source file form    */
+   fclose ( fp );                                 /* output Assembler file*/
+   NFIL [ strlen ( NFIL )-3 ] = '\x0';            /* Assembler file */
 
-  memset ( ASS_CARD.BUFCARD, ' ', 80 );           /* чистка буфера строки   */
-						  /* выходного ассемблеров- */
-						  /* ского файла            */
+  memset ( ASS_CARD.BUFCARD, ' ', 80 );           /* clear output Assembler   */
+						  /* file line buffer */
+						  /*             */
 
-  compress_ISXTXT ();                             /* лексический анализ     */
-						  /* исходного текста       */
+  compress_ISXTXT ();                             /* lexical analysis     */
+						  /* of source text       */
 
-  build_TPR ();                                   /* построение матрицы     */
-						  /* преемников             */
+  build_TPR ();                                   /* build successor matrix     */
+						  /* table                  */
 
-  if ( (sint_ANAL ()) )                           /* синтаксический анализ  */
-   {                                              /* исходного текста       */
+  if ( (sint_ANAL ()) )                           /* syntax analysis  */
+   {                                              /* of source text       */
      STROKA [I4 +20] = '\x0';
-     printf                                       /* если найдены ошибки    */
-      (                                           /* синтаксиса, то :       */
+     printf                                       /* if syntax errors found,    */
+      (                                           /* then:       */
        "%s%s%s%s\n",
-       "ошибка синтаксиса в исх.тексте -> ",      /* выдаем диагностику и   */
+       "syntax error in source text -> ",      /* output diagnosis and   */
        "\"...",&STROKA [I4], "...\""
       );
      printf
       (
-       "%s\n", "трансляция прервана"
+       "%s\n", "translation interrupted"
       );
-     return;                                      /* завершаем трансляцию   */
+     return;                                      /* complete translation   */
    }
-  else                                            /* иначе делаем           */
+  else                                            /* otherwise do           */
    {
-    switch ( gen_COD () )                         /* семантическое вычислен.*/
+    switch ( gen_COD () )                         /* semantic calculation*/
      {
-      case  0:                                    /*если код завершения = 0,*/
-						  /* то:                    */
+      case  0:                                    /*if completion code = 0,*/
+						  /* then:                    */
 
-       printf ( "%s\n",                           /* - диагностич.сообщение;*/
-	"трансляция завершена успешно" );
-       return;                                    /* - завершить трансляцию */
+       printf ( "%s\n",                           /* - diagnostic message;*/
+	"translation completed successfully" );
+       return;                                    /* - complete translation */
 
 
-      case  1:                                    /*если код завершения = 1,*/
-						  /* то:                    */
-       printf ( "%s\n",                           /* - диагностич.сообщение;*/
-	"несовпадение имени процедуры в прологе-эпилоге" );
-       break;                                     /* - выйти на обобщающую  *//* - диагностич.сообщение;*/
-						  /*диагностику             */
+      case  1:                                    /*if completion code = 1,*/
+						  /* then:                    */
+       printf ( "%s\n",                           /* - diagnostic message;*/
+	"procedure name mismatch in prologue-epilogue" );
+       break;                                     /* - go to general  *//* - diagnostic message;*/
+						  /*diagnosis             */
 
-      case  2:                                    /*если код завершения = 2,*/
-						  /* то:                    */
-       STROKA [ DST [I2].DST2 +20 ] = '\x0';      /* - диагностич.сообщение;*/
+      case  2:                                    /*if completion code = 2,*/
+						  /* then:                    */
+       STROKA [ DST [I2].DST2 +20 ] = '\x0';      /* - diagnostic message;*/
        printf ( "%s%s\n%s%s%s\n",
-	"недопустимый тип идентификатора: ",
-	 &FORMT [1], " в исх.тексте -> \"...",
+	"invalid identifier type: ",
+	 &FORMT [1], " in source text -> \"...",
 	  &STROKA [ DST [I2].DST2 ], "...\"" );
-       break;                                     /* - выйти на обобщающую  */
-						  /*диагностику             */
+       break;                                     /* - go to general  */
+						  /*diagnosis             */
 
-      case  3:                                    /*если код завершения = 3,*/
-						  /* то:                    */
-       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - диагностич.сообщение;*/
+      case  3:                                    /*if completion code = 3,*/
+						  /* then:                    */
+       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - diagnostic message;*/
        printf ( "%s%s\n%s%s%s\n",
-	"недопустимый тип идентификатора: ",
-	  &FORMT [IFORMT-1], " в исх.тексте -> \"...",
+	"invalid identifier type: ",
+	  &FORMT [IFORMT-1], " in source text -> \"...",
 	   &STROKA [ DST [I2].DST2 ], "...\"" );
-       break;                                     /* -выйти на обобщающую   */
-						  /*диагностику             */
+       break;                                     /* - go to general   */
+						  /*diagnosis             */
 
-      case  4:                                    /*если код завершения = 4,*/
-						  /* то:                    */
-       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - диагностич.сообщение;*/
+      case  4:                                    /*if completion code = 4,*/
+						  /* then:                    */
+       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - diagnostic message;*/
        printf ( "%s%s\n%s%s%s\n",
-	"неопределенный идентификатор: ",
-	 &FORMT [IFORMT-1], " в исх.тексте -> \"...",
+	"undefined identifier: ",
+	 &FORMT [IFORMT-1], " in source text -> \"...",
 	  &STROKA [ DST [I2].DST2 ], "...\"" );
-       break;                                     /* - выйти на обобщающую  */
-						  /*диагностику             */
+       break;                                     /* - go to general  */
+						  /*diagnosis             */
 
-      case  5:                                    /*если код завершения = 5,*/
-						  /* то:                    */
-       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - диагностич.сообщение;*/
+      case  5:                                    /*if completion code = 5,*/
+						  /* then:                    */
+       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - diagnostic message;*/
        printf ( "%s%c\n%s%s%s\n",
-	"недопустимая операция: ",
+	"invalid operation: ",
 	 STROKA [ DST [I2].DST4 - strlen ( FORMT [IFORMT-1] ) ],
-	 " в исх.тексте -> \"...", &STROKA [ DST [I2].DST2 ], "...\"");
-       break;                                     /* - выйти на обобщающую  */
-						  /*диагностику             */
+	 " in source text -> \"...", &STROKA [ DST [I2].DST2 ], "...\"");
+       break;                                     /* - go to general  */
+						  /*diagnosis             */
 
-      case  6:                                    /*если код завершения = 6 */
-						  /* то:                    */
-       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - диагностич.сообщение;*/
+      case  6:                                    /*if completion code = 6 */
+						  /* then:                    */
+       STROKA [ DST [I2].DST2 + 20 ] = '\x0';     /* - diagnostic message;*/
        printf ( "%s%s\n%s%s%s\n",
-	"повторное объявление идентификатора: ",
-	 &FORMT [1], " в исх.тексте -> \"...",
+	"repeated identifier declaration: ",
+	 &FORMT [1], " in source text -> \"...",
 	  &STROKA [ DST [I2].DST2 ], "...\"" );
-       break;                                     /* - выйти на обобщающую  */
-						  /*диагностику             */
+       break;                                     /* - go to general  */
+						  /*diagnosis             */
 
      }
 
    }
 
-  printf ( "%s\n", "трансляция прервана" );       /* обобщающая диагностика */
+  printf ( "%s\n", "translation interrupted" );       /* general diagnosis */
 	
   return 0;
  }

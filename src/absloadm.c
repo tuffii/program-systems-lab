@@ -320,40 +320,39 @@ int FRX(void)
 int wind(void)
 {
   int j1, k, temp;
-  
+  unsigned long line_addr;
+  int line_kk;
+
   x = 0;
   y = 16;
-   
-  kk = CUR_IND;
+
   LIGHTPTR = I1;
-  
+
   for (j1 = 0; j1 < 8; j1++)
   {
-    wprintw(wred, "%.06lX: ", I1);	
+    line_addr = I1 + (j1 * 16);
+    line_kk = (int)(I1 - BAS_ADDR) + BAS_IND + (j1 * 16);
+    
+    wmove(wred, j1, 0);
+    wprintw(wred, "%.06lX: ", line_addr);
+    
     for (j = 0; j < 4; j++)
     {
       for (k = 0; k < 4; k++)
-	wprintw(wred, "%.02X", OBLZ[BAS_IND + kk + j * 4 + k]);
+	wprintw(wred, "%.02X", OBLZ[line_kk + j * 4 + k]);
       waddstr(wred, " ");
     }
 
     waddstr(wred, "/* ");
     for (j = 0; j < 16; j++)
     {
-      if (isprint (OBLZ[BAS_IND + kk]) )  
-      {
-	waddch(wred, OBLZ[BAS_IND + kk++]);
-	wrefresh(wred);
-      }	
-      else 
-      {
-        waddstr(wred, ".");
-	kk++;
-      }
+      if (isprint(OBLZ[line_kk + j]))
+	waddch(wred, OBLZ[line_kk + j]);
+      else
+	waddch(wred, '.');
     }
 
     waddstr(wred, " */");
-    I1 += 16;
   }
   wrefresh(wred);			//вывод на экран
   wclear(wred);				//очистка содержимого окна дампа
@@ -386,7 +385,7 @@ int sys(void)
   wbkgd(wcyan, COLOR_PAIR(COLOR_CYAN));
 
 //load area dump
-  wred = newwin(8, 67, 15, 0);
+  wred = newwin(8, 68, 15, 0);
   wbkgd(wred, COLOR_PAIR(COLOR_RED));
 
 //registers field

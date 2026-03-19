@@ -10,7 +10,7 @@ for example, gcc absgraph.c -o absgraph -lncurses
 #define  NSPIS  5                                 /*size of load prog.list  */
 #define  NOBJ   50                                /*size of array obj.cards */
 #define  DOBLZ  1024                              /*length of load area     */
-#define  NOP 6                                    /*number of processed     */
+#define  NOP 15                                   /*number of processed     */
 						  /* commands               */
 
 /*
@@ -69,10 +69,13 @@ int FRR();                                        /*subr.proc. oper.RR-form.*/
 						  /*p r o t o t y p e  for  */
 int FRX();                                        /*subr.proc. oper.RX-form.*/
 /*..........................................................................*/
+int FSS();                                        /*subr.proc. oper.SS-form.*/
+/*..........................................................................*/
 
 
 int X1 = 1;                                       /* init.coord.            */
 int Y1 = 15;                                      /* on screen              */
+int CC = 0;                                       /* condition code 0=EQ 1=LT 2=GT */
 int R1,                                           /*number 1-st reg-oper-   */
 						                                      /*rand in formatsRR and RX*/
     R2,                                           /*number 2-nd reg-oper-   */
@@ -131,12 +134,20 @@ int BAS_IND;                                      /*index of load array,    */
    int (*BXPROG)()        ;                       /*pointer to subr.proc.   */
   } T_MOP [NOP]  =                                /*decl.of mach.op.table   */
     {
-{{'B' , 'A' , 'L' , 'R' , ' '} , '\x05', 2 , FRR},/*initialization          */
-{{'B' , 'C' , 'R' , ' ' , ' '} , '\x07', 2 , FRR},/*of rows                 */
-{{'S' , 'T' , ' ' , ' ' , ' '} , '\x50', 4 , FRX},/*of table                */
-{{'L' , ' ' , ' ' , ' ' , ' '} , '\x58', 4 , FRX},/*of machine              */
-{{'A' , ' ' , ' ' , ' ' , ' '} , '\x5A', 4 , FRX},/*of operations           */
-{{'S' , ' ' , ' ' , ' ' , ' '} , '\x5B', 4 , FRX},/*                        */
+{{'B' , 'A' , 'L' , 'R' , ' '} , '\x05', 2 , FRR},
+{{'B' , 'C' , 'R' , ' ' , ' '} , '\x07', 2 , FRR},
+{{'S' , 'T' , ' ' , ' ' , ' '} , '\x50', 4 , FRX},
+{{'L' , ' ' , ' ' , ' ' , ' '} , '\x58', 4 , FRX},
+{{'A' , ' ' , ' ' , ' ' , ' '} , '\x5A', 4 , FRX},
+{{'S' , ' ' , ' ' , ' ' , ' '} , '\x5B', 4 , FRX},
+{{'Z' , 'A' , 'P' , ' ' , ' '} , '\xF8', 6 , FSS},
+{{'M' , 'P' , ' ' , ' ' , ' '} , '\xFC', 6 , FSS},
+{{'C' , 'V' , 'B' , ' ' , ' '} , '\x4F', 4 , FRX},
+{{'S' , 'T' , 'H' , ' ' , ' '} , '\x40', 4 , FRX},
+{{'L' , 'H' , ' ' , ' ' , ' '} , '\x48', 4 , FRX},
+{{'C' , 'H' , ' ' , ' ' , ' '} , '\x49', 4 , FRX},
+{{'B' , 'C' , ' ' , ' ' , ' '} , '\x47', 4 , FRX},
+{{'L' , 'A' , ' ' , ' ' , ' '} , '\x41', 4 , FRX},
     };
 //..........................................................................
 //p r o g r a m for implementing semantics of command BALR
@@ -256,6 +267,58 @@ int P_S()                                         /* p r o g r a m          */
   return 0;                                       /*successful prog.compl.  */
  }
 
+int P_STH(void) { int sm; short v; ADDR=VR[B]+VR[X]+D; sm=(int)(ADDR-I); v=(short)(VR[R1]&0xFFFF); OBLZ[BAS_IND+CUR_IND+sm]=(v>>8)&0xFF; OBLZ[BAS_IND+CUR_IND+sm+1]=v&0xFF; return 0; }
+int P_LH(void) { int sm; ADDR=VR[B]+VR[X]+D; sm=(int)(ADDR-I); VR[R1]=(short)(OBLZ[BAS_IND+CUR_IND+sm]*256+OBLZ[BAS_IND+CUR_IND+sm+1]); return 0; }
+int P_CH(void) { int sm; long a; ADDR=VR[B]+VR[X]+D; sm=(int)(ADDR-I); a=(short)(OBLZ[BAS_IND+CUR_IND+sm]*256+OBLZ[BAS_IND+CUR_IND+sm+1]); CC=(VR[R1]<a)?1:(VR[R1]>a)?2:0; return 0; }
+int P_BC(void) {
+  if((R1==15)||(R1==8&&CC==0)||(R1==4&&CC==1)||(R1==2&&CC==2)) {
+    ADDR=VR[B]+VR[X]+D;
+    I=ADDR;
+    CUR_IND=(int)(I-BAS_ADDR);
+  }
+  return 0;
+}
+int P_LA(void) { ADDR=VR[B]+VR[X]+D; VR[R1]=(unsigned long)ADDR; return 0; }
+int P_CVB(void) { int sm,j; long v=0; unsigned char *p; ADDR=VR[B]+VR[X]+D; sm=(int)(ADDR-I); p=&OBLZ[BAS_IND+CUR_IND+sm]; for(j=0;j<7;j++) { v=v*10+(p[j]>>4); v=v*10+(p[j]&0x0F); } v=v*10+(p[7]>>4); if((p[7]&0x0F)==0x0D) v=-v; VR[R1]=v; return 0; }
+int P_ZAP(void) {
+  int L1,L2,B1,B2,D1,D2,sm1,sm2,j;
+  unsigned char *p1,*p2;
+  long val=0; int sign;
+  L1=(INST[1]>>4)+1; L2=(INST[1]&0x0F)+1;
+  B1=INST[2]>>4; D1=((INST[2]&0x0F)<<8)|INST[3];
+  B2=INST[4]>>4; D2=((INST[4]&0x0F)<<8)|INST[5];
+  sm1=(int)(VR[B1]+D1-I); sm2=(int)(VR[B2]+D2-I);
+  p1=&OBLZ[BAS_IND+CUR_IND+sm1]; p2=&OBLZ[BAS_IND+CUR_IND+sm2];
+  for(j=0;j<L2-1;j++){val=val*10+(p2[j]>>4);val=val*10+(p2[j]&0x0F);}
+  val=val*10+(p2[L2-1]>>4);
+  sign=p2[L2-1]&0x0F;
+  memset(p1,0,L1);
+  p1[L1-1]=sign;
+  p1[L1-1]|=((val%10)<<4); val/=10;
+  for(j=L1-2;j>=0;j--){int lo=val%10;val/=10;int hi=val%10;val/=10;p1[j]=(hi<<4)|lo;}
+  return 0;
+}
+int P_MP(void) {
+  int L1,L2,B1,B2,D1,D2,sm1,sm2,j;
+  long v1=0,v2=0; unsigned char *p1,*p2;
+  int sign1,sign2,sign;
+  L1=(INST[1]>>4)+1; L2=(INST[1]&0x0F)+1;
+  B1=INST[2]>>4; D1=((INST[2]&0x0F)<<8)|INST[3];
+  B2=INST[4]>>4; D2=((INST[4]&0x0F)<<8)|INST[5];
+  sm1=(int)(VR[B1]+D1-I); sm2=(int)(VR[B2]+D2-I);
+  p1=&OBLZ[BAS_IND+CUR_IND+sm1]; p2=&OBLZ[BAS_IND+CUR_IND+sm2];
+  for(j=0;j<L1-1;j++){v1=v1*10+(p1[j]>>4);v1=v1*10+(p1[j]&0x0F);}
+  v1=v1*10+(p1[L1-1]>>4); sign1=p1[L1-1]&0x0F;
+  for(j=0;j<L2-1;j++){v2=v2*10+(p2[j]>>4);v2=v2*10+(p2[j]&0x0F);}
+  v2=v2*10+(p2[L2-1]>>4); sign2=p2[L2-1]&0x0F;
+  v1*=v2;
+  sign=((sign1==0x0D)!=(sign2==0x0D))?0x0D:0x0C;
+  memset(p1,0,L1);
+  p1[L1-1]=sign;
+  p1[L1-1]|=((v1%10)<<4); v1/=10;
+  for(j=L1-2;j>=0;j--){int lo=v1%10;v1/=10;int hi=v1%10;v1/=10;p1[j]=(hi<<4)|lo;}
+  return 0;
+}
 
 //..........................................................................
 int FRR(void)
@@ -287,6 +350,7 @@ int FRR(void)
 int FRX(void)
 {
   int i, j;
+  int align;
   
   for (i = 0; i < NOP; i++)
   {
@@ -316,14 +380,52 @@ int FRX(void)
       
       ADDR = VR[B] + VR[X] + D;
       wprintw(wgreen,"        %.06lX       \n", ADDR);
-      if (ADDR % 4 != 0)
+      /*
+       * Alignment depends on opcode class:
+       * - word (4): ST/L/A/S
+       * - halfword (2): STH/LH/CH
+       * - none (1): LA/BC/CVB and others using RX decoding
+       */
+      align = 1;
+      switch (INST[0])
+      {
+        case '\x50': /* ST */
+        case '\x58': /* L  */
+        case '\x5A': /* A  */
+        case '\x5B': /* S  */
+          align = 4;
+          break;
+        case '\x40': /* STH */
+        case '\x48': /* LH  */
+        case '\x49': /* CH  */
+          align = 2;
+          break;
+        default:
+          align = 1;
+          break;
+      }
+      if (align > 1 && (ADDR % align) != 0)
         return (7);
       break;
     }
   }
 
   return 0;
-} 
+}
+//...........................................................................
+int FSS(void)
+{
+  int i,j;
+  for(i=0;i<NOP;i++) {
+    if(INST[0]==T_MOP[i].CODOP) {
+      waddstr(wgreen,"  ");
+      for(j=0;j<5;j++) waddch(wgreen,T_MOP[i].MNCOP[j]);
+      wprintw(wgreen," L1=%d L2=%d\n",(INST[1]>>4)+1,(INST[1]&0x0F)+1);
+      break;
+    }
+  }
+  return 0;
+}
 
 //...........................................................................   
 //---------------------------------------------------------------------------
@@ -535,22 +637,20 @@ goto WAIT;
 SKIP:
    switch (T_MOP[k].CODOP)                        /*according to cmd code,  */
    {                                              /*selected by addr.counter*/
-						                                      /*select subr.for inter-  */
-    case '\x05' : P_BALR();                       /*preting semantics       */
-		   break;                                     /*of current command      */
-    case '\x07' : { i = P_BCR();
-		    getch();
-		    if (i == 1)
-		     return 8;
-		  }
-		   break;
-    case '\x50' : P_ST();
-		   break;
-    case '\x58' : P_L();
-		   break;
-    case '\x5A' : P_A();
-		   break;
-    case '\x5B' : P_S();
+    case '\x05' : P_BALR();                       break;
+    case '\x07' : { i = P_BCR(); getch(); if (i == 1) return 8; } break;
+    case '\x50' : P_ST();                         break;
+    case '\x58' : P_L();                          break;
+    case '\x5A' : P_A();                          break;
+    case '\x5B' : P_S();                          break;
+    case '\x40' : P_STH();                        break;
+    case '\x41' : P_LA();                         break;
+    case '\x47' : P_BC();                         break;
+    case '\x48' : P_LH();                         break;
+    case '\x49' : P_CH();                         break;
+    case '\x4F' : P_CVB();                        break;
+    case 0xF8 : P_ZAP();                           break;
+    case 0xFC : P_MP();                            break;
    }
    
    goto BEGIN;	
@@ -564,6 +664,60 @@ SKIP:
 }
 //...........................................................................
 //..........................curses Initialization..............................
+int sys_batch(void)
+{
+  int found, len, step;
+  extern unsigned long I, BAS_ADDR;
+  extern int CUR_IND, BAS_IND;
+
+  I = BAS_ADDR;
+  CUR_IND = 0;
+
+  for (step = 0; step < 100; step++) {
+    CUR_IND = (int)(I - BAS_ADDR);
+    found = -1;
+    for (i = 0; i < NOP; i++) {
+      if (OBLZ[BAS_IND + CUR_IND] == T_MOP[i].CODOP) { found = i; break; }
+    }
+    if (found < 0) { printf("Unknown opcode 0x%02X at step %d\n", OBLZ[BAS_IND+CUR_IND], step); return 6; }
+
+    len = T_MOP[found].DLOP;
+    for (j = 0; j < 6; j++) INST[j] = (j < len) ? OBLZ[BAS_IND + CUR_IND + j] : 0;
+
+    if (len == 2) { R1 = INST[1] >> 4; R2 = INST[1] & 0x0F; }
+    else if (len == 4) { R1 = INST[1]>>4; X = INST[1]&0x0F; B = INST[2]>>4; D = ((INST[2]&0x0F)<<8)|INST[3]; ADDR = VR[B]+VR[X]+D; }
+
+    printf("Step %2d: %08lX ", step, I);
+    for (j = 0; j < len; j++) printf("%02X", INST[j]);
+
+    I += len;
+    CUR_IND = (int)(I - BAS_ADDR);
+
+    switch (T_MOP[found].CODOP) {
+      case '\x05': P_BALR(); break;
+      case '\x07': if (R1==15) { printf(" BCR 15,%d -> end\n", R2); goto batch_done; } break;
+      case '\x50': P_ST(); break;
+      case '\x58': P_L(); break;
+      case '\x5A': P_A(); break;
+      case '\x5B': P_S(); break;
+      case '\x40': P_STH(); break;
+      case '\x41': P_LA(); break;
+      case '\x47': P_BC(); break;
+      case '\x48': P_LH(); break;
+      case '\x49': P_CH(); break;
+      case '\x4F': P_CVB(); break;
+      case 0xF8: P_ZAP(); break;
+      case 0xFC: P_MP(); break;
+    }
+
+    printf("  R2=%08lX R3=%08lX R5=%08lX R6=%08lX CC=%d\n", VR[2], VR[3], VR[5], VR[6], CC);
+  }
+batch_done:
+  printf("\nFinal registers:\n");
+  for (i = 0; i < 16; i++) printf("  R%02d = %08lX\n", i, VR[i]);
+  return 8;
+}
+//...........................................................................
 int InitCurses(void)
 {
   initscr();					    /*initialize curses library */
@@ -597,15 +751,18 @@ int main( int argc, char **argv )                 /* p r o g r a m          */
   unsigned long J;                                /*variables               */
   FILE *fp;                                       /*program                 */
   char *ptr;
+  int batch_mode = 0;
 
 //main programm
 
 
-  if ( argc != 2 )
+  if ( argc < 2 || argc > 3 )
   {
     printf ( "%s\n", "Error in command line" );
     return -1;
   }
+  if ( argc == 3 && !strcmp(argv[2], "batch") )
+    batch_mode = 1;
  
   ptr = argv[1];
   strcpy ( NFIL, ptr );
@@ -622,7 +779,10 @@ int main( int argc, char **argv )                 /* p r o g r a m          */
   {
     while ( !feof( fp ) )                         /*read all file cards     */
      {                                            /*with list               */
-      fgets ( SPISOK [ISPIS++] , 80 , fp );       /*to SPISOK array         */
+      if ( !fgets ( SPISOK [ISPIS] , 80 , fp ) ) break;
+      { char *p=strchr(SPISOK[ISPIS],'\n'); if(p)*p=0; }
+      if ( SPISOK [ISPIS][0] == 0 ) continue;      /*skip empty lines        */
+      ISPIS++;
       if ( ISPIS == NSPIS )                       /*if this array is over-  */
        {                                          /*filled,then:            */
 	fclose ( fp );                                  /*close file with list    */
@@ -701,30 +861,33 @@ CONT2:
 
 
 
-  InitCurses();
-
-  res = sys(); 
+  if (batch_mode) {
+    res = sys_batch();
+  } else {
+    InitCurses();
+    res = sys();
+  }
   
   switch (res)
   {
     case 6: 
     {
-      endwin();
+      if (!batch_mode) endwin();
       goto ERR6;
     }
     case 7:
     {
-      endwin();
+      if (!batch_mode) endwin();
       goto ERR7;
     }
     case 8:
     {
-      endwin();
+      if (!batch_mode) endwin();
       goto ERR8;
     }
   }
   
-  endwin();
+  if (!batch_mode) endwin();
   END:
   printf ("\n%s\n", "processing complete");
 

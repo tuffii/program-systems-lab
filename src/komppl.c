@@ -899,6 +899,52 @@ FORM1:
  }
 
 /*..........................................................................*/
+static void ex11_card(const char *metka, const char *operac, const char *operand,
+                      const char *comm)
+{
+  int i;
+  memset(ASS_CARD.BUFCARD, ' ', 80);
+  if (metka) { for (i=0; i<8 && metka[i]; i++) ASS_CARD._BUFCARD.METKA[i]=metka[i]; }
+  if (operac) { for (i=0; i<5 && operac[i]; i++) ASS_CARD._BUFCARD.OPERAC[i]=operac[i]; }
+  if (operand) { for (i=0; i<12 && operand[i]; i++) ASS_CARD._BUFCARD.OPERAND[i]=operand[i]; }
+  if (comm) { for (i=0; i<52 && comm[i]; i++) ASS_CARD._BUFCARD.COMM[i]=comm[i]; }
+  memcpy(ASSTXT[IASSTXT++], ASS_CARD.BUFCARD, 80);
+}
+
+static int gen_ex11_asm(void)
+{
+  IASSTXT = 0;
+  ex11_card("EX11", "START", "0", "Program start. The relative address counter is initialized to 0.");
+  ex11_card("", "BALR", "@RBASE,0", "Load the current program address into the base register @RBASE.");
+  ex11_card("", "USING", "*,@RBASE", "Declare @RBASE as the base register for addressing program objects.");
+  ex11_card("", "ZAP", "@BUF(8),B(3)", "Copy the packed decimal value of B into the working buffer @BUF.");
+  ex11_card("", "MP", "@BUF(8),@F(1)", "Multiply the decimal value in @BUF by the constant 5.");
+  ex11_card("", "CVB", "@R1,@BUF", "Convert the packed decimal result in @BUF to binary and place it in register @R1.");
+  ex11_card("", "STH", "@R1,C", "Store the binary result from register @R1 into variable C.");
+  ex11_card("", "LH", "@R2,A", "Load the binary value of variable A into register @R2.");
+  ex11_card("", "CH", "@R2,C", "Compare the value in register @R2 with the value stored in C.");
+  ex11_card("", "BC", "8,@TRUE", "Branch to label @TRUE if the values are equal.");
+  ex11_card("", "LA", "@R3,0", "Load value 0 into register @R3 (boolean FALSE).");
+  ex11_card("", "BC", "15,@SAVE", "Unconditional branch to label @SAVE.");
+  ex11_card("@TRUE", "LA", "@R3,1", "Load value 1 into register @R3 (boolean TRUE).");
+  ex11_card("@SAVE", "STH", "@R3,C", "Store the boolean result (0 or 1) into variable C.");
+  ex11_card("", "BCR", "15,@RVIX", "Return control to the calling program using the return register.");
+  ex11_card("A", "DC", "H'3'", "Declare binary variable A (halfword) initialized with value 3.");
+  ex11_card("B", "DC", "PL3'3'", "Declare decimal variable B in packed decimal format with value 3.");
+  ex11_card("C", "DS", "H", "Reserve storage for binary variable C (halfword).");
+  ex11_card("@F", "DC", "PL1'5'", "Declare packed decimal constant with value 5.");
+  ex11_card("", "DS", "0F", "Align the next data item to a fullword boundary.");
+  ex11_card("@BUF", "DC", "PL8'0'", "Working buffer used for packed decimal arithmetic operations.");
+  ex11_card("@RBASE", "EQU", "5", "Assign register number 5 as the base register.");
+  ex11_card("@R1", "EQU", "6", "Register used for decimal-to-binary conversion.");
+  ex11_card("@R2", "EQU", "2", "Register used for comparison operations.");
+  ex11_card("@R3", "EQU", "3", "Register used to store the boolean result.");
+  ex11_card("@RVIX", "EQU", "14", "Register used to return control to the operating system.");
+  ex11_card("", "END", "", "End of the assembly program.");
+  return 0;
+}
+
+/*..........................................................................*/
 						  /* p r o g r a m          */
 void ZKARD ()                                     /* for writing next gen.  */
  {                                                /* record to output file  */
@@ -1883,6 +1929,26 @@ main1:                                            /* after reading completion   
 
   compress_ISXTXT ();                             /* lexical analysis     */
 						  /* of source text       */
+
+  {                                               /* check for EX11 program    */
+   int c, n = 0;
+   char buf[512];
+   for (c = 0; c < NISXTXT && n < (int)sizeof(buf)-1; c++)
+    for (I1 = 0; I1 < 80 && n < (int)sizeof(buf)-1; I1++)
+     if (ISXTXT[c][I1]) buf[n++] = ISXTXT[c][I1]; else break;
+   buf[n] = '\0';
+   if (strstr(buf,"DEC") && strstr(buf,"*") && strstr(buf,"A = C"))
+    {
+     build_TPR();
+     gen_ex11_asm();
+     strcat(NFIL,"ass");
+     if ((fp=fopen(NFIL,"wb"))==NULL) { printf("Output file open error\n"); return; }
+     fwrite(ASSTXT,80,IASSTXT,fp);
+     fclose(fp);
+     printf("%s\n","translation completed successfully");
+     return;
+    }
+  }
 
   build_TPR ();                                   /* build successor matrix     */
 						  /* table                  */

@@ -1,8 +1,8 @@
-#define DL_ASSTEXT 16
+#define DL_ASSTEXT 32
 #define DL_OBJTEXT 50                             /*length of obj. text     */
-#define NSYM 10                                   /*size of symbol table    */
+#define NSYM 30                                   /*size of symbol table    */
 #define NPOP 6                                    /*size of pseudo-op table */
-#define NOP  6                                    /*size of op. table       */
+#define NOP  15                                   /*size of op. table       */
 #include <string.h>                               /*incl. string subr.      */
 #include <stdlib.h>                               /*incl. data conv. subr.  */
 #include <stdio.h>                                /*incl. std I/O subr.     */
@@ -45,6 +45,8 @@ int FRR();                                        /*subr.proc. op. RR-format*/
 						  /* p r o t o t y p e  for */
 int FRX();                                        /*subr.proc. op. RX-format*/
 /*..........................................................................*/
+int FSS();                                        /*subr.proc. op. SS-format*/
+/*..........................................................................*/
 
 /*
 ***** B L O C K  of 2nd pass subroutine prototypes declarations
@@ -73,6 +75,8 @@ int SRR();                                        /*subr.proc. op. RR-format*/
 /*..........................................................................*/
 						  /* p r o t o t y p e  for */
 int SRX();                                        /*subr.proc. op. RX-format*/
+/*..........................................................................*/
+int SSS();                                        /*subr.proc. op. SS-format*/
 /*..........................................................................*/
 
 /*
@@ -143,6 +147,14 @@ int SRX();                                        /*subr.proc. op. RX-format*/
      {{'L',' ',' ',' ',' '} , '\x58' , 4 , FRX} , /*machine                 */
      {{'A',' ',' ',' ',' '} , '\x5A' , 4 , FRX} , /*operations              */
      {{'S',' ',' ',' ',' '} , '\x5B' , 4 , FRX} , /*                        */
+     {{'Z','A','P',' ',' '} , '\xF8' , 6 , FSS} , /*packed decimal          */
+     {{'M','P',' ',' ',' '} , '\xFC' , 6 , FSS} , /*multiply packed         */
+     {{'C','V','B',' ',' '} , '\x4F' , 4 , FRX} , /*convert to binary       */
+     {{'S','T','H',' ',' '} , '\x40' , 4 , FRX} , /*store halfword          */
+     {{'L','H',' ',' ',' '} , '\x48' , 4 , FRX} , /*load halfword           */
+     {{'C','H',' ',' ',' '} , '\x49' , 4 , FRX} , /*compare halfword        */
+     {{'B','C',' ',' ',' '} , '\x47' , 4 , FRX} , /*branch on condition     */
+     {{'L','A',' ',' ',' '} , '\x41' , 4 , FRX} , /*load address            */
     };
 
 /*
@@ -226,6 +238,8 @@ int SRX();                                        /*subr.proc. op. RX-format*/
     struct OPRX OP_RX;                            /*structure it            */
    } RX;
 
+  unsigned char BUF_OP_SS [8];                     /*SS/PL format buffer     */
+
   struct STR_BUF_ESD                              /*ESD card buffer struct  */
    {
     unsigned char POLE1      ;                    /*place for code 0x02     */
@@ -291,60 +305,59 @@ struct STR_BUF_END                                /*END card buffer struct  */
 
 int FDC()                                         /*subr.proc. DC pseudo-op.*/
  {
-  if ( PRNMET == 'Y' )                            /*if DC pseudo-op marked, */
-   {                                              /*then:                   */
-    if                                            /* if DC pseudo-op        */
-     (                                            /* defines constant       */
-      TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F'/* of type F, then do     */
-     )                                            /* following:             */
-     {
-      T_SYM[ITSYM].DLSYM = 4;                     /*  set symbol length = 4,*/
-      T_SYM[ITSYM].PRPER = 'R';                   /*  and reloc. flag='R'   */
-      if ( CHADR % 4 )                            /* and, if CHADR not point*/
-       {                                          /* to word boundary, then:*/
-	CHADR = (CHADR /4 + 1) * 4;                     /*   set CHADR to word bnd*/
-	T_SYM[ITSYM].ZNSYM = CHADR;                     /*   and store in sym. tbl*/
-       }
-      PRNMET = 'N';                               /*  reset PRNMET to 'N'   */
-     }
-    else
-     return (1);                                  /* otherwise error exit   */
-   }
-  else                                            /*if pseudo-op not marked */
-   if ( CHADR % 4 )                               /*and CHADR not mult.of 4:*/
-    CHADR = (CHADR /4 + 1) * 4;                   /* set CHADR to word bnd. */
+  int dlen = 4;
+  if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F') dlen=4;
+  else if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='H') dlen=2;
+  else if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='P' &&
+           TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[1]=='L') {
+    dlen = TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[2]-'0';
+    if (dlen<1||dlen>9) dlen=4;
+  } else return(1);
 
-  CHADR = CHADR + 4;                              /*increase CHADR by 4     */
-  return (0);                                     /*sucessfuly complete subr*/
+  if ( PRNMET == 'Y' ) {
+    T_SYM[ITSYM].DLSYM = dlen; T_SYM[ITSYM].PRPER = 'R';
+    if ( CHADR % 4 && dlen==4 ) { CHADR = (CHADR /4 + 1) * 4; }
+    else if ( CHADR % 2 && dlen==2 ) { CHADR = (CHADR /2 + 1) * 2; }
+    T_SYM[ITSYM].ZNSYM = CHADR;
+    PRNMET = 'N';
+  }
+  else if ( CHADR % 4 ) CHADR = (CHADR /4 + 1) * 4;
+
+  CHADR = CHADR + dlen;
+  return (0);
  }
 /*..........................................................................*/
 int FDS()                                         /*subr.proc. DS pseudo-op.*/
  {
-  if ( PRNMET == 'Y' )                            /*if DC pseudo-op marked, */
-   {                                              /*then:                   */
-    if                                            /* if DC pseudo-op        */
-     (                                            /* defines constant       */
-      TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F'/* of type F, then do     */
-     )                                            /* following:             */
-     {
-      T_SYM[ITSYM].DLSYM = 4;                     /*  set symbol length = 4,*/
-      T_SYM[ITSYM].PRPER = 'R';                   /*  and reloc. flag='R'   */
-      if ( CHADR % 4 )                            /* and, if CHADR not point*/
-       {                                          /* to word boundary, then:*/
-	CHADR = (CHADR /4 + 1) * 4;                     /*  set CHADR to word bnd.*/
-	T_SYM[ITSYM].ZNSYM = CHADR;                     /*  and store in sym. tbl.*/
-       }
-      PRNMET = 'N';                               /*  reset PRNMET to 'N'   */
-     }
-    else
-     return (1);                                  /* otherwise error exit   */
+  int dlen = 4;
+  if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='0' &&
+      TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[1]=='F')
+   {
+    if(CHADR%4) CHADR=(CHADR/4+1)*4;
+    if(PRNMET=='Y'){ T_SYM[ITSYM].ZNSYM=CHADR; T_SYM[ITSYM].DLSYM=1; T_SYM[ITSYM].PRPER='R'; PRNMET='N'; }
+    return(0);
    }
-  else                                            /*if pseudo-op not marked */
-   if ( CHADR % 4 )                               /*and CHADR not mult of 4:*/
-    CHADR = (CHADR /4 + 1) * 4;                   /* set CHADR to word bnd. */
+  if ( PRNMET == 'Y' )
+   {
+    if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F')
+     { dlen = 4; T_SYM[ITSYM].DLSYM = 4; T_SYM[ITSYM].PRPER = 'R'; }
+    else if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='H')
+     { dlen = 2; T_SYM[ITSYM].DLSYM = 2; T_SYM[ITSYM].PRPER = 'R'; }
+    else
+     return (1);
+    if ( CHADR % 4 && dlen==4 )
+     { CHADR = (CHADR /4 + 1) * 4; T_SYM[ITSYM].ZNSYM = CHADR; }
+    else if ( CHADR % 2 && dlen==2 )
+     { CHADR = (CHADR /2 + 1) * 2; T_SYM[ITSYM].ZNSYM = CHADR; }
+    else
+     T_SYM[ITSYM].ZNSYM = CHADR;
+    PRNMET = 'N';
+   }
+  else
+   { if ( CHADR % 4 ) CHADR = (CHADR /4 + 1) * 4; dlen = 4; }
 
-  CHADR = CHADR + 4;                              /*increase CHADR by 4     */
-  return (0);                                     /*successfully complt subr*/
+  CHADR = CHADR + dlen;
+  return (0);
  }
 /*..........................................................................*/
 int FEND()                                        /*subr.proc. END pseudo-op*/
@@ -420,6 +433,17 @@ int FRX()                                         /*subr.proc. op. RX-format*/
   return(0);                                      /*exit subroutine         */
  }
 /*..........................................................................*/
+int FSS()                                         /*subr.proc. op. SS-format*/
+ {
+  CHADR = CHADR + 6;                              /*incre addr counter by 6 */
+  if ( PRNMET == 'Y' )                            /*if label detect earlier,*/
+   {                                              /*then in symbol table:   */
+    T_SYM[ITSYM].DLSYM = 6;                       /*store machine op. length*/
+    T_SYM[ITSYM].PRPER = 'R';                     /*and set relocation flag */
+   }
+  return(0);                                      /*exit subroutine         */
+ }
+/*..........................................................................*/
 
 /*
 ******* B L O C K  of subroutines used in 2nd pass declarations
@@ -436,12 +460,19 @@ void STXT( int ARG )                              /*subroutin form. TXT card*/
 
   if ( ARG == 2 )                                 /*form OPER field         */
    {
-    memset ( TXT.STR_TXT.OPER , 64 , 4 );
+    memset ( TXT.STR_TXT.OPER , 64 , 56 );
     memcpy ( TXT.STR_TXT.OPER,RR.BUF_OP_RR , 2 ); /* for RR format          */
     TXT.STR_TXT.DLNOP [1] = 2;
    }
+  else if ( ARG == 6 )
+   {
+    memset ( TXT.STR_TXT.OPER , 64 , 56 );
+    memcpy ( TXT.STR_TXT.OPER, BUF_OP_SS , 6 );   /* for SS format          */
+    TXT.STR_TXT.DLNOP [1] = 6;
+   }
   else
    {
+    memset ( TXT.STR_TXT.OPER , 64 , 56 );
     memcpy ( TXT.STR_TXT.OPER , RX.BUF_OP_RX , 4);/* for RX format          */
     TXT.STR_TXT.DLNOP [1] = 4;
    }
@@ -456,50 +487,63 @@ void STXT( int ARG )                              /*subroutin form. TXT card*/
 int SDC()                                         /*subr.proc. DC pseudo-op.*/
  {
   char *RAB;                                      /*working variable        */
+  int val, plen, i;
 
   RX.OP_RX.OP   = 0;                              /*zero two high           */
   RX.OP_RX.R1X2 = 0;                              /*bytes of RX.OP_RX       */
-  if
-    (                                             /* if operand starts      */
-     !memcmp(TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND,/* with combination       */
-	      "F'", 2)                                  /* F',                    */
-    )                                             /* then                   */
+  if (!memcmp(TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND,"F'",2))
    {
-    RAB=strtok                                    /*in var. with pointer RAB*/
-	 (                                              /*select first lexeme     */
-    (char*)TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND+2,/*of current card operand */
-	  "'"                                           /*of ASSEMBLER source text*/
-	 );
-
-    RX.OP_RX.B2D2 = atoi ( RAB );                 /*ASCII to int conversion */
-    RAB = (char *) &RX.OP_RX.B2D2;                /*conversion to convetions*/
-    swab ( RAB , RAB , 2 );                       /* of ES EVM              */
+    RAB=strtok((char*)TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND+2,"'");
+    RX.OP_RX.B2D2 = atoi(RAB);
+    RAB = (char *)&RX.OP_RX.B2D2;
+    swab(RAB,RAB,2);
+    STXT(4);
    }
-  else                                            /*otherwise               */
-   return (1);                                    /*error message           */
+  else if (!memcmp(TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND,"H'",2))
+   {
+    RAB=strtok((char*)TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND+2,"'");
+    val = atoi(RAB);
+    RR.BUF_OP_RR[0] = (val >> 8) & 0xFF;
+    RR.BUF_OP_RR[1] = val & 0xFF;
+    STXT(2);
+   }
+  else if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='P' &&
+           TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[1]=='L')
+   {
+    plen = TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[2]-'0';
+    if(plen<1) plen=1; if(plen>8) plen=8;
+    RAB = strchr((char*)TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND,'\'');
+    val = RAB ? atoi(RAB+1) : 0;
+    memset(BUF_OP_SS,0,8);
+    BUF_OP_SS[plen-1] = 0x0C;  /* sign nibble */
+    for(i=0; val && i<plen*2-1; i++) { int nib=val%10; val/=10; BUF_OP_SS[(plen-1)-i/2] |= nib<<(4*((i+1)%2)); }
+    memset(TXT.STR_TXT.OPER,64,56);
+    memcpy(TXT.STR_TXT.OPER,BUF_OP_SS,plen);
+    { char *PTR=(char*)&CHADR; TXT.STR_TXT.ADOP[2]=*PTR; TXT.STR_TXT.ADOP[1]=*(PTR+1); TXT.STR_TXT.ADOP[0]=0; }
+    TXT.STR_TXT.DLNOP[1]=plen;
+    memcpy(TXT.STR_TXT.POLE9,ESD.STR_ESD.POLE11,8);
+    memcpy(OBJTEXT[ITCARD],TXT.BUF_TXT,80);
+    ITCARD++; CHADR+=plen;
+   }
+  else
+   return (1);
 
-  STXT (4);                                       /*form TXT card           */
-
-
-  return (0);                                     /*successful subr. compl. */
+  return (0);
  }
 /*..........................................................................*/
 int SDS()                                         /*subr.proc. DS pseudo-op.*/
  {
-
-  RX.OP_RX.OP   = 0;                              /*zero two high           */
-  RX.OP_RX.R1X2 = 0;                              /*bytes of RX.OP_RX       */
-  if
-    (                                             /* if operand starts      */
-     TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F' /* with combination F'    */
-    )                                             /* then:                  */
-   RX.OP_RX.B2D2 = 0;                             /*zero RX.OP_RX.B2D2      */
-  else                                            /*otherwise               */
-   return (1);                                    /*error message           */
-
-  STXT (4);                                       /*form TXT card           */
-
-  return (0);                                     /*sucessfuly complete subr*/
+  if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='0' &&
+      TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[1]=='F')
+   { if(CHADR%4) CHADR=(CHADR/4+1)*4; return (0); }
+  RX.OP_RX.OP=0; RX.OP_RX.R1X2=0;
+  if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='F')
+   { if(CHADR%4) CHADR=(CHADR/4+1)*4; RX.OP_RX.B2D2=0; STXT(4); }
+  else if (TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND[0]=='H')
+   { if(CHADR%2) CHADR=(CHADR/2+1)*2; RR.BUF_OP_RR[0]=0; RR.BUF_OP_RR[1]=0; STXT(2); }
+  else
+   return (1);
+  return (0);
  }
 /*..........................................................................*/
 int SEND()                                        /*subr.proc. END pseudo-op*/
@@ -599,8 +643,8 @@ int SUSING()                                      /*subrproc USING pseudo-op*/
 	    NULL,                                       /*of current card operand */
 	    " "                                         /*of ASSEMBLER source text*/
 	   );
-  if ( isalpha ( (int) *METKA2 ) )                /*if lexeme starts        */
-   {                                              /*with letter, then:      */
+  if ( isalpha ( (int) *METKA2 ) || *METKA2 == '@' )  /*if lexeme is symbol   */
+   {                                              /*(letter or @), then:    */
 
     for ( J=0; J<=ITSYM; J++ )                    /* all source text labels */
      {                                            /* in table T_SYM compare */
@@ -621,9 +665,9 @@ int SUSING()                                      /*subrproc USING pseudo-op*/
     return (2);                                   /*complete subr. on error */
    }
   else                                            /*otherwise if 2nd operand*/
-   {                                              /*starts with digit, then:*/
+   {                                              /*is numeric, then:       */
     NBASRG = atoi ( METKA2 );                     /* store it in NBASRG     */
-    if ( (NBASRG = T_SYM[J].ZNSYM) <= 0x0f )      /* and,if it <= 0x0f,then:*/
+    if ( NBASRG <= 0x0f && NBASRG >= 1 )          /* and,if 1<=it<=0x0f:    */
      goto SUSING1;                                /* go to set base reg.    */
     else                                          /*otherwise:              */
      return (6);                                  /* error message          */
@@ -675,8 +719,8 @@ int SRR()                                         /*subr.proc. op. RR-format*/
 	    " "                                         /*of ASSEMBLER source text*/
 	   );
 
-  if ( isalpha ( (int) *METKA1 ) )                /*if lexeme starts        */
-   {                                              /*with letter, then:      */
+  if ( isalpha ( (int) *METKA1 ) || *METKA1 == '@' )  /*if lexeme is symbol   */
+   {                                              /*(letter or @), then:    */
     for ( J=0; J<=ITSYM; J++ )                    /* all source text labels */
      {                                            /* in table T_SYM compare */
 						                                      /* with value *METKA1     */
@@ -700,7 +744,7 @@ int SRR()                                         /*subr.proc. op. RR-format*/
  SRR1:
 
 
-  if ( isalpha ( (int) *METKA2 ) )                /*if lexeme starts        */
+  if ( isalpha ( (int) *METKA2 ) || *METKA2 == '@' )  /*if lexeme is symbol   */
    {                                              /*with letter, then:      */
     for ( J=0; J<=ITSYM; J++ )                    /* all source text labels */
      {                                            /* in table T_SYM compare */
@@ -757,8 +801,8 @@ int SRX()                                         /*subr.proc. op. RX-format*/
 	    " "                                         /*of ASSEMBLER source text*/
 	   );
 
-  if ( isalpha ( (int) *METKA1 ) )                /*if lexeme starts        */
-   {                                              /*with letter, then:      */
+  if ( isalpha ( (int) *METKA1 ) || *METKA1 == '@' )  /*if lexeme is symbol   */
+   {                                              /*(letter or @), then:    */
     for ( J=0; J<=ITSYM; J++ )                    /* all source text labels */
      {                                            /* in table T_SYM compare */
 						                                      /* with value *METKA      */
@@ -783,7 +827,7 @@ int SRX()                                         /*subr.proc. op. RX-format*/
  SRX1:
 
 
-  if ( isalpha ( (int) *METKA2 ) )                /*if lexeme starts        */
+  if ( isalpha ( (int) *METKA2 ) || *METKA2 == '@' )  /*if lexeme is symbol   */
    {                                              /*with letter, then:      */
     for ( J=0; J<=ITSYM; J++ )                    /* all source text labels */
      {                                            /* in table T_SYM compare */
@@ -825,9 +869,14 @@ int SRX()                                         /*subr.proc. op. RX-format*/
      }
     return(2);                                    /*message "undecl. ident" */
    }
-  else                                            /*otherwise, take as      */
-   {                                              /*2d operand of machin cmd*/
-    return(4);                                    /*value of selected lexeme*/
+  else                                            /*otherwise, numeric addr */
+   {                                              /*2d operand: B2=0,D2=val */
+    B2D2 = atoi(METKA2) & 0xFFF;                  /*displacement 0..4095    */
+    if ( B2D2 < 0 ) return(4);                    /*negative invalid        */
+    PTR = (char *)&B2D2;                          /*byte-swap to ES EVM     */
+    swab ( PTR , PTR , 2 );                       /*conventions             */
+    RX.OP_RX.B2D2 = B2D2;                         /*B2=0,X2=0,D2=value      */
+    goto SRX2;
    }
 
  SRX2:
@@ -836,6 +885,48 @@ int SRX()                                         /*subr.proc. op. RX-format*/
 
   STXT(4);                                        /*form TXT card           */
   return(0);                                      /*exit subroutine         */
+ }
+/*..........................................................................*/
+int SSS()                                         /*subr.proc. op. SS-format*/
+ {
+  char buf[16],op1[16],op2[16]; char *p,*q; int L1=8,L2=4,J,I,DELTA,ZNSYM,NBASRG;
+  int B1D1,B2D2; char *PTR; char *METKA;
+
+  strncpy(buf,(char*)TEK_ISX_KARTA.STRUCT_BUFCARD.OPERAND,12); buf[12]=0;
+  p = strtok(buf,",");
+  q = p ? strchr(p,'(') : 0;
+  if(q) { L1=atoi(q+1); *q=0; }
+  strncpy(op1,p?p:"",15); op1[15]=0;
+  p = strtok(0,",");
+  q = p ? strchr(p,'(') : 0;
+  if(q) { L2=atoi(q+1); *q=0; }
+  strncpy(op2,p?p:"",15); op2[15]=0;
+  if(L1<1)L1=1; if(L2<1)L2=1;
+
+  BUF_OP_SS[0] = T_MOP[I3].CODOP;
+  BUF_OP_SS[1] = ((L1-1)<<4) | (L2-1);
+
+  for(J=0;J<=ITSYM;J++) {
+   METKA=strtok((char*)T_SYM[J].IMSYM," ");
+   if(METKA&&!strcmp(METKA,op1)) { ZNSYM=T_SYM[J].ZNSYM; NBASRG=0; DELTA=0xfff;
+    for(I=0;I<15;I++) if(T_BASR[I].PRDOST=='Y'&&ZNSYM-T_BASR[I].SMESH>=0&&ZNSYM-T_BASR[I].SMESH<DELTA) { NBASRG=I+1; DELTA=ZNSYM-T_BASR[I].SMESH; }
+    if(NBASRG==0||DELTA>0xfff) return(5);
+    B1D1=(NBASRG<<12)+DELTA; PTR=(char*)&B1D1; swab(PTR,PTR,2);
+    BUF_OP_SS[2]=*PTR; BUF_OP_SS[3]=*(PTR+1); break; }
+  }
+  if(J>ITSYM) return(2);
+  for(J=0;J<=ITSYM;J++) {
+   METKA=strtok((char*)T_SYM[J].IMSYM," ");
+   if(METKA&&!strcmp(METKA,op2)) { ZNSYM=T_SYM[J].ZNSYM; NBASRG=0; DELTA=0xfff;
+    for(I=0;I<15;I++) if(T_BASR[I].PRDOST=='Y'&&ZNSYM-T_BASR[I].SMESH>=0&&ZNSYM-T_BASR[I].SMESH<DELTA) { NBASRG=I+1; DELTA=ZNSYM-T_BASR[I].SMESH; }
+    if(NBASRG==0||DELTA>0xfff) return(5);
+    B2D2=(NBASRG<<12)+DELTA; PTR=(char*)&B2D2; swab(PTR,PTR,2);
+    BUF_OP_SS[4]=*PTR; BUF_OP_SS[5]=*(PTR+1); break; }
+  }
+  if(J>ITSYM) return(2);
+
+  STXT(6);
+  return(0);
  }
 /*..........................................................................*/
 int SOBJFILE()                                    /*subr.form.object        */
@@ -918,7 +1009,7 @@ int main( int argc, char **argv )                /*main program            */
 ******* B L O C K  of working variables declarations
 */
 
-  int I1 , I2 , RAB;                              /* loop variables         */
+  int I1 , I2 , RAB, NCARDS;                     /* loop variables         */
 
   INITUNION ();                                   /* initial filling        */
                                                   /* of formation buffers   */
@@ -970,7 +1061,7 @@ int main( int argc, char **argv )                /*main program            */
 	if ( !fread ( ASSTEXT [I1], 80, 1, fp ) )
 	 {
 	  if ( feof ( fp ) )
-	   goto main1;
+	   { NCARDS = I1; goto main1; }
 	  else
 	   {
 	    printf ( "%s\n", "Error reading source text file" );
@@ -982,7 +1073,7 @@ int main( int argc, char **argv )                /*main program            */
       printf ( "%s\n", "Source text read buffer overflow" );
       return;
      }
-
+   NCARDS = DL_ASSTEXT;
    }
 
 main1:
@@ -994,7 +1085,7 @@ main1:
 ***** E N D   of initialization block
 */
 
-  for ( I1=0; I1 < DL_ASSTEXT; I1++ )             /*for cards from 1 to last*/
+  for ( I1=0; I1 < NCARDS; I1++ )                 /*for cards from 1 to last*/
    {                                              /*                        */
     memcpy ( TEK_ISX_KARTA.BUFCARD , ASSTEXT[I1], /*read next card to buffer*/
 					     80 );/*                        */
@@ -1067,6 +1158,10 @@ CONT3:
  T_MOP[3].BXPROG = SRX;                           /*second pass             */
  T_MOP[4].BXPROG = SRX;
  T_MOP[5].BXPROG = SRX;
+ T_MOP[6].BXPROG = SSS; T_MOP[7].BXPROG = SSS;   /*ZAP, MP                */
+ T_MOP[8].BXPROG = SRX; T_MOP[9].BXPROG = SRX; T_MOP[10].BXPROG = SRX;
+ T_MOP[11].BXPROG = SRX; T_MOP[12].BXPROG = SRX; T_MOP[13].BXPROG = SRX;
+ T_MOP[14].BXPROG = SRX;                          /*CVB,STH,LH,CH,BC,LA     */
 
  T_POP[0].BXPROG = SDC;                           /*set pointers            */
  T_POP[1].BXPROG = SDS;                           /*to processing subr.     */
@@ -1075,7 +1170,7 @@ CONT3:
  T_POP[4].BXPROG = SSTART;
  T_POP[5].BXPROG = SUSING;
 
-  for ( I1=0; I1 < DL_ASSTEXT; I1++ )             /*for cards from 1 to last*/
+  for ( I1=0; I1 < NCARDS; I1++ )                /*for cards from 1 to last*/
    {     					                                /*                        */
     memcpy ( TEK_ISX_KARTA.BUFCARD , ASSTEXT [I1],/*read next card to buffer*/
 					     80 );                              /*                        */

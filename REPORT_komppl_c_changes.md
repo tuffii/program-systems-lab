@@ -2,6 +2,8 @@
 
 Документ составлен по **полному `git diff`** между закоммиченной версией файла и текущим рабочим деревом (без коммита). Базовый коммит: `fd4630e` → текущее состояние (`443 insertions / 340 deletions` по статистике diff).
 
+Ниже для **каждого раздела** добавлен блок с **основными строками текущего файла** (ключевые правки; не полный diff построчно).
+
 ---
 
 ## Как устроен пайплайн (куда попадают правки)
@@ -24,6 +26,11 @@
 |-----------|------|-------|-------|----------|
 | `NSINT` | `201` | `232` | Расширена таблица правил `SINT[]` (новые ветки грамматики). | Синтаксис (`sint_ANAL`) |
 | `MAXLTXT` | `50` | `100` | Увеличен запас строк в `ASSTXT[]` под большее число сгенерированных ASM-карточек. | Генерация / вывод (`ZKARD` → `PRO2`) |
+
+```c
+#define NSINT     232                             /* - syntax rules table;  */
+#define MAXLTXT   100                             /* - output text;         */
+```
 
 ---
 
@@ -54,6 +61,17 @@
 - **Смысл**: завершение грамматики для использования константы в арифметическом/смешанном выражении.
 - **Пайплайн**: синтаксис.
 
+```c
+ {/*.  168     .*/   169 ,   165 , "IPE" ,  229 },
+ {/*.  187     .*/   188 ,    49 , "C  " ,  201 },
+ {/*.  201     .*/   202 ,    49 , "D  " ,    0 },
+ {/*.  213     .*/   214 ,   212 , ";  " ,  216 },
+ {/*.  226     .*/   227 ,     0 , "=  " ,    0 },
+ {/*.  227     .*/   228 ,   226 , "ZNK" ,    0 },
+ {/*.  229     .*/   230 ,   165 , "RZR" ,    0 },
+ {/*.  230     .*/   231 ,   229 , "AVI" ,    0 },
+```
+
 ---
 
 ## 3. Таблица входов `VXOD[]` и матрица `TPR[][]`
@@ -62,6 +80,14 @@
 |-----------|------|-------|----------|
 | `VXOD[49]` для `"="` | поле `VX` с `0` на `226` | Токен `=` начинает ветку сравнения (`ZNK`), а не «тонет» в грамматике. | Синтаксис |
 | `TPR[49][15]` (строка `"="`, столбец `ZNK`) | с `0` на `1` | Разрешено начинать разбор нетерминала `ZNK` после `=`. | Синтаксис |
+
+```c
+  {/*.  50     .*/   "=  " , 226 , 'T' },
+```
+
+```c
+  {/*  =*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  },
+```
 
 ---
 
@@ -74,6 +100,19 @@
 | `EXTRA[]`, `NEXTRA` | Список дополнительных объектов данных (например константа `@FIVE` для литерала `5`), объявляемых в эпилоге. | Семантика (`AVI2` накапливает, `OEN2` выводит) |
 | `DIGIT_WORDS[]` | Массив строк имён цифр — **остался в файле после рефакторинга**; фактически `const_label()` использует `switch`, массив можно считать **неиспользуемым** (мертвый код). | — |
 
+```c
+char RESULT_REG[9] = "@R2";
+char PENDING_LABEL[9] = "";
+
+struct {
+    char name[9];
+    char type;
+    int  size;
+    char value[10];
+} EXTRA[20];
+int NEXTRA = 0;
+```
+
 ---
 
 ## 5. Комментарии в ASM-карточке: `COMM_LIM`, `SETCOMM()`
@@ -85,6 +124,22 @@
 
 Вызовы `SETCOMM(...)` расставлены перед соответствующими `ZKARD()` в `OPR2`, `AVI2`, `OPA2`, `OEN2` (см. разделы ниже).
 
+```c
+#define COMM_LIM 25
+void SETCOMM ( const char *s )
+{
+  int i;
+  int prefix = 0;
+  while ( prefix < 52 && ASS_CARD._BUFCARD.COMM[prefix] != ' ' ) prefix++;
+  int start = prefix;
+  if ( prefix > 0 && prefix + 1 < 52 ) start = prefix + 1;
+  for ( i = start; i < 52; i++ ) ASS_CARD._BUFCARD.COMM[i] = ' ';
+  if ( !s ) return;
+  for ( i = 0; i < COMM_LIM && s[i] != '\0' && start + i < 52; i++ )
+    ASS_CARD._BUFCARD.COMM[start + i] = s[i];
+}
+```
+
 ---
 
 ## 6. `const_label()` — имя константы для литерала
@@ -95,6 +150,20 @@
 
 Реализация через `switch (atol(val))` (без опоры на таблицу указателей `DIGIT_WORDS`).
 
+```c
+void const_label ( char *buf, const char *val )
+{
+  long v = atol(val);
+  switch ( v )
+   {
+    case 0: sprintf ( buf, "@ZERO" ); break;
+    case 5: sprintf ( buf, "@FIVE" ); break;
+    case 9: sprintf ( buf, "@NINE" ); break;
+    default: sprintf ( buf, "@C%s", val ); break;
+   }
+}
+```
+
 ---
 
 ## 7. `VALUE()` — значение литерала
@@ -102,6 +171,16 @@
 | Изменение | Суть | Зачем | Пайплайн |
 |-----------|------|-------|----------|
 | Расширение `VALUE()` | Если в строке есть `B` — разбор **двоичного** литерала (`11B`); иначе `atol()` для **десятичной** записи. | Нужны и `INIT (11B)`, и десятичные константы в выражениях. | Семантика 1-й/2-й проход (`ODC1`, генерация `DC`/`PL` в `OEN2`) |
+
+```c
+long int VALUE ( char* s )
+ {
+  /* ... is_bin: разбор до 'B'; иначе atol(s) */
+  if ( is_bin ) { /* ... */ return (S); }
+  else
+    return atol(s);
+ }
+```
 
 ---
 
@@ -113,6 +192,19 @@
 
 Логика прежняя: `memcpy` в `ASSTXT[IASSTXT++]`, затем очистка первых 79 байт `ASS_CARD` пробелами.
 
+```c
+void ZKARD ()
+ {
+  char i;
+  memcpy ( ASSTXT [ IASSTXT++ ],
+           ASS_CARD.BUFCARD, 80 );
+
+  for ( i = 0; i < 79; i++ )
+    ASS_CARD.BUFCARD [i] = ' ';
+  return;
+ }
+```
+
 ---
 
 ## 9. `ODC1()` — семантика объявлений `DCL`
@@ -122,6 +214,20 @@
 | Поддержка `DEC FIXED` | Если `FORMT[2]=="DEC"` и `FORMT[3]=="FIXED"`, то `SYM[].TYPE = 'D'`. | Таблица имён знает упакованный десятичный тип. | Семантика 1-й проход |
 | `INIT` необязателен | Если нет `INIT`, в `SYM[].INIT` пишется пустая строка (`'\0'`), а не принудительный `"0B"`. | Корректно для `DCL C BIN FIXED` без инициализации → в эпилоге `DS H`. | Семантика 1-й проход |
 | Упрощение форматирования кода | Убраны лишние переносы комментариев, логика та же. | Поддержка. | — |
+
+```c
+  if ( !strcmp ( FORMT [2], "BIN" ) && !strcmp ( FORMT [3], "FIXED" ) )
+   { SYM [ISYM].TYPE = 'B'; goto ODC11; }
+  else if ( !strcmp ( FORMT [2], "DEC" ) && !strcmp ( FORMT [3], "FIXED" ) )
+   { SYM [ISYM].TYPE = 'D'; goto ODC11; }
+  else { SYM [ISYM].TYPE = 'U'; return 2; }
+
+ODC11:
+  if ( !strcmp ( FORMT [5], "INIT" )  )
+   strcpy ( SYM [ISYM++].INIT, FORMT [6] );
+  else
+   { SYM [ISYM].INIT[0] = '\0'; ISYM++; }
+```
 
 ---
 
@@ -159,6 +265,43 @@
 
 **Пайплайн:** семантика 2-й проход, непосредственно **генерация ASM** (`ASS_CARD` + `ZKARD`).
 
+```c
+        if ( SYM [i].TYPE == 'B' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "LH", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R2," );
+          strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [0] );
+          SETCOMM ( "Load A ->@R2" );
+          ZKARD ();
+          strcpy ( RESULT_REG, "@R2" );
+         }
+        else if ( SYM [i].TYPE == 'D' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "ZAP", 3 );
+          sprintf ( opbuf, "@BUF(8),%s(%s)", FORMT[0], SYM[i].RAZR );
+          memcpy ( ASS_CARD.BUFCARD + 15, opbuf, strlen(opbuf) );
+          SETCOMM ( "Copy pdec B->BUF" );
+          ZKARD ();
+         }
+
+    if ( op_sign == '*' )
+     {
+        const_label ( clbl, const_val );
+        sprintf ( opbuf, "@BUF(8),%s(1)", clbl );
+        memcpy ( ASS_CARD._BUFCARD.OPERAC, "MP", 2 );
+        memcpy ( ASS_CARD.BUFCARD + 15, opbuf, strlen(opbuf) );
+        SETCOMM ( "Mul BUF by 5 ->BUF" );
+        ZKARD ();
+        /* CVB ... EXTRA[] ... */
+     }
+    else if ( op_sign == '=' )
+     {
+        /* CH, BC, LA, B, @TRUE LA, PENDING_LABEL @SAVE */
+        strcpy ( RESULT_REG, "@R3" );
+        strcpy ( PENDING_LABEL, "@SAVE" );
+     }
+```
+
 ---
 
 ## 11. `OPA2()` — присваивание `OPA`
@@ -168,6 +311,23 @@
 | Убраны `ST`/`STH` по разрядности `RAZR` и операнд `RRAB` | Всегда `STH` с регистром-источником из `RESULT_REG`. | Согласование с halfword-переменными и регистрами `@R1`/`@R3`. | Семантика 2-й проход |
 | Обработка `PENDING_LABEL` | Если задан `@SAVE`, метка переносится на карточку `STH` после сравнения. | Соответствие разметке `@SAVE` в таблице операций. | Семантика |
 | Разные комментарии для булева/числа | По `RESULT_REG == "@R3"` vs иначе. | Краткое текстовое пояснение без имён мнемоник в тексте. | Генерация |
+
+```c
+        if ( PENDING_LABEL[0] != '\0' )
+         {
+          strcpy ( ASS_CARD._BUFCARD.METKA, PENDING_LABEL );
+          PENDING_LABEL[0] = '\0';
+         }
+        memcpy ( ASS_CARD._BUFCARD.OPERAC, "STH", 3 );
+        strcpy ( ASS_CARD._BUFCARD.OPERAND, RESULT_REG );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, "," );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [0] );
+        if ( !strcmp ( RESULT_REG, "@R3" ) )
+          SETCOMM ( "Store bool ->C" );
+        else
+          SETCOMM ( "Store int ->C" );
+        ZKARD ();
+```
 
 ---
 
@@ -184,6 +344,47 @@
 | EQU | `RBASE`, `RRAB` без `@` | `@RBASE`, `@R1`, `@R2`, `@R3`, `@RVIX` с нужными номерами | Генерация |
 | `END` | копирование имени программы в операнд (и риск UB с `i++`) | Только `END` без операнда + `SETCOMM("Program ends")` | Генерация |
 
+Выдержки из разных мест `OEN2()` (в файле ветки `B` и `D` разделены `if` / `else if`).
+
+```c
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BCR", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,@RVIX", 8 );
+  SETCOMM ( "Return to caller" );
+  ZKARD ();
+
+        if ( SYM[i].INIT[0] == '\0' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "DS", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "H" );
+          SETCOMM ( "Reserve halfword" );
+         }
+        else
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "DC", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "H\'" );
+          sprintf ( RAB, "%ld", VALUE(SYM[i].INIT) );
+          strcat ( ASS_CARD._BUFCARD.OPERAND, RAB );
+          SETCOMM ( "Store halfword init" );
+         }
+
+        sprintf ( plop, "PL%s\'%ld\'", SYM[i].RAZR, VALUE(SYM[i].INIT) );
+        strcpy ( ASS_CARD._BUFCARD.OPERAND, plop );
+        SETCOMM ( "Store pdec init" );
+
+    sprintf ( plop, "PL%d\'%s\'", EXTRA[ei].size, EXTRA[ei].value );
+
+    memcpy ( ASS_CARD._BUFCARD.METKA, "@BUF", 4 );
+    strcpy ( ASS_CARD._BUFCARD.OPERAND, "PL8\'0\'" );
+
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@RBASE", 6 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "5", 1 );
+
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "END", 3 );
+  SETCOMM ( "Program ends" );
+  ZKARD ();
+```
+
 ---
 
 ## 13. `OPR2()` — пролог `PROC`
@@ -193,6 +394,25 @@
 | Комментарий `START` | `memcpy(...,"Start of program",16)` заменён на `SETCOMM("Init rel addr=0")`. | Единый способ задания `COMM`, лимит длины. | Генерация |
 | `BALR` / `USING` | Операнды `RBASE` → `@RBASE`; добавлен явный пробел после операнда в поле фиксированной ширины. | Соответствие целевым именам регистров и формату карточки. | Генерация |
 | Комментарии | Старые длинные строки заменены на короткие `SETCOMM(...)`. | Требования к кратким пояснениям. | Генерация |
+
+```c
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "START", 5 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "0", 1 );
+  SETCOMM ( "Init rel addr=0" );
+  ZKARD ();
+
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "@RBASE,0", 8 );
+  ASS_CARD._BUFCARD.OPERAND[8] = ' ';
+  SETCOMM ( "Set @RBASE=cur PC" );
+  ZKARD ();
+
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "*,@RBASE", 8 );
+  ASS_CARD._BUFCARD.OPERAND[8] = ' ';
+  SETCOMM ( "Use @RBASE for addr" );
+  ZKARD ();
+```
 
 ---
 
@@ -209,14 +429,98 @@
 
 ---
 
-## 15. Как воспроизвести diff у себя
+## 15. Демонстрация результата: компиляция `EX11`
 
-```bash
-git diff src/komppl.c
+### 15.1. Исходная программа (`src/step1/ex11.pli`)
+
+```pli
+EX11: PROC OPTIONS (MAIN);
+    DCL A BIN FIXED (15) INIT ( 11B );
+    DCL B DEC FIXED (3)  INIT ( 11B );
+    DCL C BIN FIXED (15);
+    C = B * 5;
+    C = A = C;
+END EX11;
 ```
 
-Если нужен отчёт вместе с контекстом конкретных строк — открой этот файл и параллельно `git diff -U3 src/komppl.c`.
+Семантика программы:
+- `A` и `B` инициализируются двоичным литералом `11B` = **3** (десятичное).
+- `A` — целое halfword (BIN FIXED), `B` — упакованное десятичное длиной 3 байта (DEC FIXED).
+- `C = B * 5` → умножение упакованного `B` (=3) на константу 5; результат через `CVB` записывается в `C` = **15**.
+- `C = A = C` → сравнение `A` (=3) и `C` (=15): они не равны → булево **0 (False)** записывается в `C`.
 
----
+### 15.2. Полученный ассемблер (`src/step1/ex11.ass`)
 
-*Файл сгенерирован для описания всех накопленных правок в `komppl.c` относительно последнего git-коммита репозитория.*
+Формат карточки IBM S/360: `[метка(8)] [мнемоника(6)] [операнд] [комментарий]`
+
+```asm
+EX11     START 0            Init rel addr=0
+         BALR  @RBASE,0     Set @RBASE=cur PC
+         USING *,@RBASE     Use @RBASE for addr
+         ZAP   @BUF(8),B(3) Copy pdec B->BUF
+         MP    @BUF(8),@FIVE(1) Mul BUF by 5 ->BUF
+         CVB   @R1,@BUF     pdec BUF ->int @R1
+         STH   @R1,C        Store int ->C
+         LH    @R2,A        Load A ->@R2
+         CH    @R2,C        Compare @R2 with C
+         BC    8,@TRUE      Branch if equal
+         LA    @R3,0        Set @R3=0 (F)
+         B     @SAVE        Jump to save
+@TRUE    LA    @R3,1        Set @R3=1 (T)
+@SAVE    STH   @R3,C        Store bool ->C
+         BCR   15,@RVIX     Return to caller
+A        DC    H'3'         Store halfword init
+B        DC    PL3'3'       Store pdec init
+C        DS    H            Reserve halfword
+@FIVE    DC    PL1'5'       Store packed const
+         DS    0F           Align next item
+@BUF     DC    PL8'0'       Clear packed BUF
+@RBASE   EQU   5            Set @RBASE=5
+@R1      EQU   6            Set @R1=6
+@R2      EQU   2            Set @R2=2
+@R3      EQU   3            Set @R3=3
+@RVIX    EQU   14           Set @RVIX=14
+         END                Program ends
+```
+
+### 15.3. Пошаговый разбор кодогенерации
+
+#### Пролог — `OPR2()`
+
+| ASM-строка | Откуда | Назначение |
+|---|---|---|
+| `EX11 START 0` | имя программы из `FORMT[0]` → поле `METKA` | Стартовый адрес программы = 0 |
+| `BALR @RBASE,0` | фиксированная карточка пролога | Загрузка счётчика команд в базовый регистр (`@RBASE`=5) |
+| `USING *,@RBASE` | фиксированная карточка пролога | Объявление базы адресации для ассемблера |
+
+#### Оператор `C = B * 5` — `AVI2()` → `OPA2()`
+
+| ASM-строка | Причина |
+|---|---|
+| `ZAP @BUF(8),B(3)` | `B` имеет тип `'D'` (DEC FIXED, `RAZR`="3"); скопировать в 8-байтный буфер для арифметики |
+| `MP @BUF(8),@FIVE(1)` | знак `*`; литерал `5` → `const_label` → `@FIVE`; умножение двух упакованных десятичных |
+| `CVB @R1,@BUF` | перевод результата из packed decimal в двоичное целое; `RESULT_REG` ← `"@R1"` |
+| `STH @R1,C` | `OPA2`: цель `C` типа `'B'`; сохранение halfword из `RESULT_REG` (`@R1`) |
+
+#### Оператор `C = A = C` — `AVI2()` → `OPA2()`
+
+| ASM-строка | Причина |
+|---|---|
+| `LH @R2,A` | `A` типа `'B'`; загрузка halfword; `RESULT_REG` ← `"@R2"` |
+| `CH @R2,C` | знак `=`; правый операнд — `C`; сравнение содержимого `@R2` с `C` |
+| `BC 8,@TRUE` | маска `8` = «равно»; если `A == C` — переход на `@TRUE` |
+| `LA @R3,0` / `B @SAVE` | false-ветка: `@R3` = 0, безусловный прыжок в `@SAVE` |
+| `@TRUE: LA @R3,1` | true-ветка: `@R3` = 1; `RESULT_REG` ← `"@R3"`, `PENDING_LABEL` ← `"@SAVE"` |
+| `@SAVE: STH @R3,C` | `OPA2`: метка `@SAVE` берётся из `PENDING_LABEL`, затем сбрасывается; запись булева в `C` |
+
+#### Эпилог — `OEN2()`
+
+| Блок | ASM-строки | Откуда |
+|---|---|---|
+| Возврат | `BCR 15,@RVIX` | Первая фиксированная карточка `OEN2` |
+| Переменные из `SYM[]` | `A DC H'3'`, `B DC PL3'3'`, `C DS H` | Цикл по `SYM[]`: `B`→`DC H'…'` / `DS H`; `D`→`DC PL…` |
+| Константа `@FIVE` | `@FIVE DC PL1'5'` | Цикл по `EXTRA[]`, заполненный в `AVI2` при первой встрече литерала `5` |
+| Буфер | `DS 0F` + `@BUF DC PL8'0'` | Генерируется только при `NEXTRA > 0` |
+| Определения регистров | `@RBASE EQU 5` … `@RVIX EQU 14` | Пять фиксированных карточек `EQU` |
+| Завершение | `END` | Без операнда; `SETCOMM("Program ends")` |
+

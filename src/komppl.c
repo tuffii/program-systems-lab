@@ -13,13 +13,13 @@
 						  /* l i m i t i n g       */
 						  /* sizes:                */
 #define MAXNISXTXT 50                             /* - source text;         */
-#define NSINT     201                             /* - syntax rules table;  */
+#define NSINT     232                             /* - syntax rules table;  */
 #define NCEL       20                             /* - goals stack;         */
 #define NDST      500                             /* - achievements stack;  */
 #define NVXOD      53                             /* - entries table;       */
 #define NSTROKA   200                             /* - compressed text line;*/
 #define NNETRM     16                             /* - non-terminals list;  */
-#define MAXLTXT    50                             /* - output text;         */
+#define MAXLTXT   100                             /* - output text;         */
 #define MAXFORMT   30                             /* - formatted inter-     */
                                                   /* preted fragment        */
                                                   /* of source text;        */
@@ -342,7 +342,7 @@ struct
  {/*.  166     .*/   167 ,   165 , "LIT" ,  168 },
  {/*.  167     .*/   197 ,   166 , "AVI" ,    0 },
 
- {/*.  168     .*/   169 ,   165 , "IPE" ,    0 },
+ {/*.  168     .*/   169 ,   165 , "IPE" ,  229 },
  {/*.  169     .*/   170 ,   168 , "AVI" ,    0 },
  {/*.  170     .*/     0 ,   169 , "*  " ,    0 },
   /*                                               input from symbol - OPR   */
@@ -368,7 +368,7 @@ struct
  {/*.  186     .*/     0 ,    73 , "*  " ,    0 },
 
 
- {/*.  187     .*/   188 ,    49 , "C  " ,    0 },
+ {/*.  187     .*/   188 ,    49 , "C  " ,  201 },
  {/*.  188     .*/   189 ,   187 , "H  " ,    0 },
  {/*.  189     .*/   190 ,   188 , "A  " ,    0 },
  {/*.  190     .*/   191 ,   189 , "R  " ,    0 },
@@ -383,7 +383,41 @@ struct
 
  {/*.  198     .*/   199 ,     0 , "*  " ,    0 },
  {/*.  199     .*/   200 ,   198 , "ZNK" ,    0 },
- {/*.  200     .*/     0 ,   199 , "*  " ,    0 }
+ {/*.  200     .*/     0 ,   199 , "*  " ,    0 },
+  /*                                            DEC FIXED path (alt from 187) */
+ {/*.  201     .*/   202 ,    49 , "D  " ,    0 },
+ {/*.  202     .*/   203 ,   201 , "E  " ,    0 },
+ {/*.  203     .*/   204 ,   202 , "C  " ,    0 },
+ {/*.  204     .*/   205 ,   203 , "   " ,    0 },
+ {/*.  205     .*/   206 ,   204 , "F  " ,    0 },
+ {/*.  206     .*/   207 ,   205 , "I  " ,    0 },
+ {/*.  207     .*/   208 ,   206 , "X  " ,    0 },
+ {/*.  208     .*/   209 ,   207 , "E  " ,    0 },
+ {/*.  209     .*/   210 ,   208 , "D  " ,    0 },
+ {/*.  210     .*/   211 ,   209 , "(  " ,    0 },
+ {/*.  211     .*/   212 ,   210 , "RZR" ,    0 },
+ {/*.  212     .*/   213 ,   211 , ")  " ,    0 },
+ {/*.  213     .*/   214 ,   212 , ";  " ,  216 },
+ {/*.  214     .*/   215 ,   213 , "ODC" ,    0 },
+ {/*.  215     .*/     0 ,   214 , "*  " ,    0 },
+ {/*.  216     .*/   217 ,   212 , "I  " ,    0 },
+ {/*.  217     .*/   218 ,   216 , "N  " ,    0 },
+ {/*.  218     .*/   219 ,   217 , "I  " ,    0 },
+ {/*.  219     .*/   220 ,   218 , "T  " ,    0 },
+ {/*.  220     .*/   221 ,   219 , "(  " ,    0 },
+ {/*.  221     .*/   222 ,   220 , "LIT" ,    0 },
+ {/*.  222     .*/   223 ,   221 , ")  " ,    0 },
+ {/*.  223     .*/   224 ,   222 , ";  " ,    0 },
+ {/*.  224     .*/   225 ,   223 , "ODC" ,    0 },
+ {/*.  225     .*/     0 ,   224 , "*  " ,    0 },
+  /*                                            = as ZNK (comparison op)     */
+ {/*.  226     .*/   227 ,     0 , "=  " ,    0 },
+ {/*.  227     .*/   228 ,   226 , "ZNK" ,    0 },
+ {/*.  228     .*/     0 ,   227 , "*  " ,    0 },
+  /*                                            RZR as AVI operand           */
+ {/*.  229     .*/   230 ,   165 , "RZR" ,    0 },
+ {/*.  230     .*/   231 ,   229 , "AVI" ,    0 },
+ {/*.  231     .*/     0 ,   230 , "*  " ,    0 }
 };
 
 /*
@@ -452,7 +486,7 @@ struct
   {/*.  47     .*/   ";  " ,   0 , 'T' },
   {/*.  48     .*/   "L  " ,   0 , 'T' },
   {/*.  49     .*/   "F  " ,   0 , 'T' },
-  {/*.  50     .*/   "=  " ,   0 , 'T' },
+  {/*.  50     .*/   "=  " , 226 , 'T' },
   {/*.  51     .*/   "H  " ,   0 , 'T' },
   {/*.  52     .*/   "*  " , 198 , 'T' }
 };
@@ -529,7 +563,7 @@ char TPR [ NVXOD ] [ NNETRM ] =
   |       AVI:BUK:CIF:IDE:IPE:IPR:LIT:MAN:ODC:OEN;OPA:OPR:PR0:RZR:TEL:ZNK|
   |__________:___:___:___:___:___:___:___:___:___:___:___:___:___:___:___| */
   {/*  F*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  },
-  {/*  =*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  },
+  {/*  =*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  },
   {/*  H*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  },
   {/*  **/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  }
 /*|_______________________________________________________________________| */
@@ -836,26 +870,87 @@ int ISYM = 0;                                     /* current index of names */
 char NFIL [30]="\x0";                             /* storage of translated  */
 						                                      /* program name           */
 
+char RESULT_REG[9] = "@R2";
+char PENDING_LABEL[9] = "";
+
+struct {
+    char name[9];
+    char type;
+    int  size;
+    char value[10];
+} EXTRA[20];
+int NEXTRA = 0;
+
+#define COMM_LIM 25
+void SETCOMM ( const char *s )
+{
+  int i;
+  /* COMM field sometimes contains "overflown" operand tail characters
+     (because operand can be longer than the fixed overlay field).
+     Preserve the leading non-space bytes (the tail), then write the comment
+     after them.
+
+     If we preserved at least 1 char from the tail, keep one extra separator
+     space so the listing doesn't show "(1)Mul" glued together. */
+  int prefix = 0;
+  while ( prefix < 52 && ASS_CARD._BUFCARD.COMM[prefix] != ' ' ) prefix++;
+
+  int start = prefix;
+  if ( prefix > 0 && prefix + 1 < 52 ) start = prefix + 1;
+
+  /* Clear only from start onward (keep preserved tail + separator space). */
+  for ( i = start; i < 52; i++ ) ASS_CARD._BUFCARD.COMM[i] = ' ';
+
+  if ( !s ) return;
+  for ( i = 0; i < COMM_LIM && s[i] != '\0' && start + i < 52; i++ )
+    ASS_CARD._BUFCARD.COMM[start + i] = s[i];
+}
+
+static char *DIGIT_WORDS[] = {
+  "ZERO","ONE","TWO","THREE","FOUR","FIVE","SIX","SEVEN","EIGHT","NINE"
+};
+
+void const_label ( char *buf, const char *val )
+{
+  long v = atol(val);
+  /* Avoid relying on a table-of-pointers: some parts of the compiler
+     manipulate fixed-width buffers and this can indirectly corrupt
+     global pointer tables. Switch-case is safer for label creation. */
+  switch ( v )
+   {
+    case 0: sprintf ( buf, "@ZERO" ); break;
+    case 1: sprintf ( buf, "@ONE" ); break;
+    case 2: sprintf ( buf, "@TWO" ); break;
+    case 3: sprintf ( buf, "@THREE" ); break;
+    case 4: sprintf ( buf, "@FOUR" ); break;
+    case 5: sprintf ( buf, "@FIVE" ); break;
+    case 6: sprintf ( buf, "@SIX" ); break;
+    case 7: sprintf ( buf, "@SEVEN" ); break;
+    case 8: sprintf ( buf, "@EIGHT" ); break;
+    case 9: sprintf ( buf, "@NINE" ); break;
+    default: sprintf ( buf, "@C%s", val ); break;
+   }
+}
+
 /*..........................................................................*/
 
-long int VALUE ( char* s )                        /* p r o g r a m          */
- {                                                /* for binary constant    */
-  long int S;                                     /* translation from ASCII */
-  int i;                                          /* to internal long int   */
-						                                      /* representation         */
-  i = 0;
-  S = 0;
-  while ( *(s + i) != 'B' )
+long int VALUE ( char* s )
+ {
+  long int S;
+  int i, is_bin = 0;
 
+  for ( i = 0; s[i] != '\0'; i++ )
+    if ( s[i] == 'B' ) { is_bin = 1; break; }
+
+  if ( is_bin )
    {
-
-    S <<= 1;
-    if ( *(s + i) == '1' )
-     S++;
-    i++;
+    i = 0; S = 0;
+    while ( *(s + i) != 'B' )
+     { S <<= 1; if ( *(s + i) == '1' ) S++; i++; }
+    return (S);
    }
-
-  return (S);
+  else
+    return atol(s);
  }
 
 
@@ -906,10 +1001,10 @@ void ZKARD ()                                     /* for writing next gen.  */
                                                   /* ASSTXT                 */
   char i;
   memcpy ( ASSTXT [ IASSTXT++ ],
-			   ASS_CARD.BUFCARD, 80 );
+           ASS_CARD.BUFCARD, 80 );
 
   for ( i = 0; i < 79; i++ )
-   ASS_CARD.BUFCARD [i] = ' ';
+    ASS_CARD.BUFCARD [i] = ' ';
   return;
  }
 
@@ -1018,52 +1113,41 @@ int MAN1 ()
 int ODC1 ()
  {
   int i;
-  FORM ();                                        /* formatting of PL1 oper-*/
-						  /* ator DCL             */
+  FORM ();
 
-  for ( i = 0; i < ISYM; i++ )                    /* if we detect repeated  */
-   {                                              /* declaration of         */
-    if (  !strcmp ( SYM [i].NAME, FORMT [1] ) &&  /* second term of operator*/
-	  strlen ( SYM [i].NAME ) ==                    /* DCL, then              */
-			     strlen ( FORMT [1] )
-       )
-     return 6;                                    /* program completion     */
-						                                      /* on error               */
-   }
-
-  strcpy ( SYM [ISYM].NAME, FORMT [1] );          /* if no repeated         */
-  strcpy ( SYM [ISYM].RAZR, FORMT [4] );          /* identifier declaration */
-                                                  /* we store it with       */
-                                                  /* its precision in       */
-                                                  /* table SYM              */
-
-  if ( !strcmp ( FORMT [2], "BIN" ) &&            /* if identifier speci-   */
-		  !strcmp ( FORMT [3], "FIXED" ) )            /* fied as bin fixed,     */
+  for ( i = 0; i < ISYM; i++ )
    {
-    SYM [ISYM].TYPE = 'B';                        /* then set type          */
-						                                      /* of identifier = 'B' and*/
-    goto ODC11;                                   /* go to continue proces- */
-						                                      /* sing, and              */
+    if (  !strcmp ( SYM [i].NAME, FORMT [1] ) &&
+	  strlen ( SYM [i].NAME ) == strlen ( FORMT [1] ) )
+     return 6;
    }
-  else                                            /* otherwise              */
+
+  strcpy ( SYM [ISYM].NAME, FORMT [1] );
+  strcpy ( SYM [ISYM].RAZR, FORMT [4] );
+
+  if ( !strcmp ( FORMT [2], "BIN" ) && !strcmp ( FORMT [3], "FIXED" ) )
    {
-    SYM [ISYM].TYPE = 'U';                        /* set identifier type    */
-						                                      /* = 'U' and              */
-    return 2;                                     /* complete program       */
-						                                      /* on error               */
+    SYM [ISYM].TYPE = 'B';
+    goto ODC11;
+   }
+  else if ( !strcmp ( FORMT [2], "DEC" ) && !strcmp ( FORMT [3], "FIXED" ) )
+   {
+    SYM [ISYM].TYPE = 'D';
+    goto ODC11;
+   }
+  else
+   {
+    SYM [ISYM].TYPE = 'U';
+    return 2;
    }
 
-ODC11:                                            /* if identifier          */
-						                                      /* has initial init-      */
-  if ( !strcmp ( FORMT [5], "INIT" )  )           /* ialization, then store */
-   strcpy ( SYM [ISYM++].INIT, FORMT [6] );       /* in SYM table this ini- */
-						                                      /* tial value, and        */
-  else                                            /* otherwise              */
-   strcpy ( SYM [ISYM++].INIT, "0B" );            /* initialize identifier  */
-						                                      /* with zero              */
+ODC11:
+  if ( !strcmp ( FORMT [5], "INIT" )  )
+   strcpy ( SYM [ISYM++].INIT, FORMT [6] );
+  else
+   { SYM [ISYM].INIT[0] = '\0'; ISYM++; }
 
-   return 0;                                      /* successful completion  */
-						                                      /* of program             */
+   return 0;
  }
 
 /*..........................................................................*/
@@ -1194,140 +1278,157 @@ int ZNK1 ()
 
 int AVI2 ()
  {
-  char i;
-  FORM ();                                        /*format right part of    */
-                                                  /*arithmetic PL1 assign-  */
-                                                  /*ment operator           */
+  int i;
+  char op_sign;
+  char opbuf[40];
 
-  if ( IFORMT == 1 )                              /* if right part is one-  */
-     {                                            /* term, then:            */
-    for ( i = 0; i < ISYM; i++ )                  /* search this term in    */
-     {                                            /* names table and        */
-      if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&/* if found, then:        */
-	   strlen ( SYM [i].NAME ) ==
-			      strlen ( FORMT [0] )
-	 )
-       {
-	  if ( SYM [i].TYPE == 'B' )              /* if type=bin fixed      */
-	   {
+  FORM ();
 
-	    if ( strcmp ( SYM [i].RAZR, "15" )    /* and precision <= 15    */
-					     <= 0 )
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* form assembler op.     */
-					"LH", 2 );                        /* code LH,               */
-	    else
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* and for precision >15  */
-					 "L", 1 );                        /* form assembler op.     */
-						                                /* code L                 */
-
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       form             */
-					"RRAB," );                        /*       1st and          */
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* 2nd operands of assem- */
-				       FORMT [0]);                  /* bler operation         */
-
-	    ASS_CARD._BUFCARD.OPERAND [ strlen    /* insert separator       */
-	     ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
-
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* and line comment       */
-	     "Load variable to register", 29 );
-
-	    ZKARD ();                             /* store assembler op.    */
-						                                /* and                    */
-	    return 0;                             /* complete program       */
-	   }
-	  else
-	   return 3;                              /* if term type not bin   */
-                                            /* fixed, exit on error   */
-                                            /*                        */
-       }
-     }
-    return 4;                                     /* if term-identifier     */
-                                                  /* undefined, exit        */
-                                                  /* on error               */
-   }
-  else                                            /* if right part of arith-*/
-                                                  /* metic expression       */
-                                                  /* is two-term, then:     */
+  if ( IFORMT == 1 )
    {
-    for ( i = 0; i < ISYM; i++ )                  /* if right term of arith-*/
-     {                                            /* metic expression       */
-      if ( !strcmp ( SYM [i].NAME,                /*defined in SYM table,   */
-			    FORMT [IFORMT-1] )  &&
-	   strlen ( SYM [i].NAME ) ==
-		       strlen ( FORMT [IFORMT-1] )
-	 )
+    for ( i = 0; i < ISYM; i++ )
+     {
+      if ( !strcmp ( SYM [i].NAME, FORMT [0] ) &&
+           strlen ( SYM [i].NAME ) == strlen ( FORMT [0] ) )
        {
-	  if ( SYM [i].TYPE == 'B' )              /* if right operand type  */
-	   {                                      /* bin fixed, then:       */
-
-	    if ( STROKA [ DST [I2].DST4 -         /* if operand sign "+",   */
-	     strlen( FORMT [IFORMT-1] ) ] == '+' )
-	     {
-	      if ( strcmp ( SYM [i].RAZR, "15" )  /* if right operand prec. */
-					    <= 0 )                        /* <= 15, then:           */
-	       memcpy ( ASS_CARD._BUFCARD.OPERAC,
-					"AH", 2 );                        /* form assembler op.*/
-	      else                                /* code "AH", and*/
-	       memcpy ( ASS_CARD._BUFCARD.OPERAC,
-					 "A", 1 );                        /* otherwise - "A"            */
-	     }
-
-	    else
-
-	     {
-	      if ( STROKA [ DST [I2].DST4 -       /* if operation sign          */
-		 strlen ( FORMT [IFORMT-1] ) ] ==       /* of arithmetic              */
-					     '-' )                        /* expression "-", then:      */
-
-	       {
-		if ( strcmp ( SYM [i].RAZR, "15" )      /* if arithmetic              */
-					    <= 0 )                        /* expr. precision <= 15      */
-		 memcpy( ASS_CARD._BUFCARD.OPERAC,      /* form assembler op.         */
-					"SH", 2 );                        /* code "SH",                 */
-		else
-		 memcpy( ASS_CARD._BUFCARD.OPERAC,      /* otherwise - "S"            */
-					 "S", 1 );
-	       }
-
-	      else
-
-	       return 5;                          /* if operation sign not       */
-						                                /* "+" or "-", then            */
-                                            /* program completion on       */
-                                            /* error                       */
-	     }
-						                                /* form:                       */
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /* - 1st operand of assem-     */
-					"RRAB," );                        /* bler operation;             */
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /* - 2nd operand of assem-     */
-			       FORMT [IFORMT-1] );            /* bler operation;             */
-	    ASS_CARD._BUFCARD.OPERAND [ strlen
-		  ( ASS_CARD._BUFCARD.OPERAND )] =      /* - separator space;          */
-					      ' ';
-	    memcpy ( ASS_CARD._BUFCARD.COMM,
-	   "Form intermediate value",             /* - line comment              */
-					     36 );
-	    ZKARD ();                             /* store assembler             */
-						                                /* operation                   */
-
-	    return 0;                             /* successful completion       */
-						                                /* of program                  */
-	   }
-	  else
-	   return 3;                              /* if right operand type       */
-                                            /* of arithmetic               */
-                                            /* expression not bin fixed,   */
-                                            /* then program                */
-                                            /* tion on error               */
+        if ( SYM [i].TYPE == 'B' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "LH", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R2," );
+          strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [0] );
+          ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+          SETCOMM ( "Load A ->@R2" );
+          ZKARD ();
+          strcpy ( RESULT_REG, "@R2" );
+          return 0;
+         }
+        else if ( SYM [i].TYPE == 'D' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "ZAP", 3 );
+          sprintf ( opbuf, "@BUF(8),%s(%s)", FORMT[0], SYM[i].RAZR );
+          memcpy ( ASS_CARD.BUFCARD + 15, opbuf, strlen(opbuf) );
+          SETCOMM ( "Copy pdec B->BUF" );
+          ZKARD ();
+          return 0;
+         }
+        else
+         return 3;
        }
      }
-    return 4;                               /* if right operand       */
-                                            /* of arithmetic          */
-                                            /*expression not defined  */
-                                            /* in SYM, then complete  */
-                                            /* program on error       */
+    return 4;
    }
+  else
+   {
+    op_sign = STROKA [ DST [I2].DST4 - strlen( FORMT [IFORMT-1] ) ];
 
+    if ( op_sign == '*' )
+     {
+      int li;
+      char const_val[10];
+      strcpy ( const_val, FORMT[IFORMT-1] );
+
+      { char clbl[9];
+        const_label ( clbl, const_val );
+        sprintf ( opbuf, "@BUF(8),%s(1)", clbl );
+      }
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "MP", 2 );
+      memcpy ( ASS_CARD.BUFCARD + 15, opbuf, strlen(opbuf) );
+      SETCOMM ( "Mul BUF by 5 ->BUF" );
+      ZKARD ();
+
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "CVB", 3 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R1,@BUF" );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "pdec BUF ->int @R1" );
+      ZKARD ();
+
+      strcpy ( RESULT_REG, "@R1" );
+
+      for ( li = 0; li < NEXTRA; li++ )
+        if ( !strcmp(EXTRA[li].value, const_val) ) break;
+      if ( li == NEXTRA )
+       {
+        const_label ( EXTRA[NEXTRA].name, const_val );
+        EXTRA[NEXTRA].type = 'P';
+        EXTRA[NEXTRA].size = 1;
+        strcpy ( EXTRA[NEXTRA].value, const_val );
+        NEXTRA++;
+       }
+
+      return 0;
+     }
+
+    else if ( op_sign == '=' )
+     {
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "CH", 2 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R2," );
+      strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT[IFORMT-1] );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "Compare @R2 with C" );
+      ZKARD ();
+
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "BC", 2 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "8,@TRUE" );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "Branch if equal" );
+      ZKARD ();
+
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "LA", 2 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R3,0" );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "Set @R3=0 (F)" );
+      ZKARD ();
+
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "B", 1 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "@SAVE" );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "Jump to save" );
+      ZKARD ();
+
+      memcpy ( ASS_CARD._BUFCARD.METKA, "@TRUE", 5 );
+      ASS_CARD._BUFCARD.METKA[5] = ' ';
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "LA", 2 );
+      strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R3,1" );
+      ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+      SETCOMM ( "Set @R3=1 (T)" );
+      ZKARD ();
+
+      strcpy ( RESULT_REG, "@R3" );
+      strcpy ( PENDING_LABEL, "@SAVE" );
+
+      return 0;
+     }
+
+    else
+     {
+      for ( i = 0; i < ISYM; i++ )
+       {
+        if ( !strcmp ( SYM [i].NAME, FORMT [IFORMT-1] ) &&
+             strlen ( SYM [i].NAME ) == strlen ( FORMT [IFORMT-1] ) )
+         {
+          if ( SYM [i].TYPE == 'B' )
+           {
+            if ( op_sign == '+' )
+              memcpy ( ASS_CARD._BUFCARD.OPERAC, "AH", 2 );
+            else if ( op_sign == '-' )
+              memcpy ( ASS_CARD._BUFCARD.OPERAC, "SH", 2 );
+            else
+              return 5;
+
+            strcpy ( ASS_CARD._BUFCARD.OPERAND, "@R2," );
+            strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [IFORMT-1] );
+            ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+            ZKARD ();
+            strcpy ( RESULT_REG, "@R2" );
+            return 0;
+           }
+          else
+            return 3;
+         }
+       }
+      return 4;
+     }
+   }
  }
 
 /*..........................................................................*/
@@ -1451,105 +1552,127 @@ int ODC2 ()
 int OEN2 ()
  {
   char RAB [20];
-  char i = 0;
-  FORM ();                                        /* format PL1-operator    */
-						  /* END                    */
+  int i = 0;
+  int ei;
+  FORM ();
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BCR", 3 );  /* form unconditional   */
-						  /*return control code     */
-						  /* to calling program     */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BCR", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,@RVIX", 8 );
+  ASS_CARD._BUFCARD.OPERAND[8] = ' ';
+  SETCOMM ( "Return to caller" );
+  ZKARD ();
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,14", 5 );/* command operands and   */
-
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment field     */
-		       "Exit from program", 18 );
-
-  ZKARD ();                                       /* store operation        */
-						  /* of Assembler           */
-
-						  /* next is formation block*/
-						  /* of declarative         */
-						  /* DC pseudo-ops for      */
-						  /* each identifier that   */
-						  /* got into SYM table     */
   for ( i = 0; i < ISYM; i++ )
-   {                                              /* if SYM table row       */
-    if ( isalpha ( SYM [i].NAME [0] ) )           /* contains identifier,   */
-						  /* i.e.starts with letter,*/
-     {                                            /* then:                  */
-      if ( SYM [i].TYPE == 'B' )                  /* if operator type bin   */
-						  /* fixed, then:           */
+   {
+    if ( !isalpha ( SYM [i].NAME [0] ) ) continue;
+    if ( SYM [i].TYPE != 'B' && SYM [i].TYPE != 'D' ) continue;
+
+      memset ( ASS_CARD._BUFCARD.METKA, ' ', 8 );
+      memcpy ( ASS_CARD._BUFCARD.METKA, SYM [i].NAME,
+               strlen(SYM [i].NAME) );
+
+      if ( SYM [i].TYPE == 'B' )
        {
-	strcpy ( ASS_CARD._BUFCARD.METKA,         /* write identifier to    */
-				  SYM [i].NAME ); /* label field of pseudo- */
-						  /* op DC                  */
-	ASS_CARD._BUFCARD.METKA [ strlen
-	     ( ASS_CARD._BUFCARD.METKA ) ] = ' '; /* write field separator*/
-
-	memcpy ( ASS_CARD._BUFCARD.OPERAC,        /* write pseudo-op code   */
-				       "DC", 2 ); /* DC                     */
-
-	if ( strcmp ( SYM [i].RAZR, "15" ) <= 0 ) /* form pseudo-op operands*/
-						  /* pseudo-op DC           */
-	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* for halfword case      */
-					 "H\'" );
-	else                                      /* or                     */
-
-	 strcpy ( ASS_CARD._BUFCARD.OPERAND,      /* for word case          */					 "F\'" );
-
-//Dos command
-//	strcat ( ASS_CARD._BUFCARD.OPERAND,       /* form numeric           */
-//		 ltoa ( VALUE (SYM [i].INIT),     /* part of pseudo-op      */
-//				 &RAB [0], 10) ); /* operand,               */
-//let's do that in Unix!
-	strcat(ASS_CARD._BUFCARD.OPERAND, gcvt(VALUE(SYM[i].INIT), 10, &RAB[0]));
-	ASS_CARD._BUFCARD.OPERAND [ strlen        /* closing apostrophe     */
-	 ( ASS_CARD._BUFCARD.OPERAND ) ] = '\'';  /*          and             */
-
-	memcpy ( ASS_CARD._BUFCARD.COMM,          /* line comment field     */
-		 "Variable definition", 22 );
-
-	ZKARD ();                                 /* store operation        */
-						  /*    of Assembler        */
+        if ( SYM[i].INIT[0] == '\0' )
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "DS", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "H" );
+          ASS_CARD._BUFCARD.OPERAND[1] = ' ';
+          SETCOMM ( "Reserve halfword" );
+         }
+        else
+         {
+          memcpy ( ASS_CARD._BUFCARD.OPERAC, "DC", 2 );
+          strcpy ( ASS_CARD._BUFCARD.OPERAND, "H\'" );
+          sprintf ( RAB, "%ld", VALUE(SYM[i].INIT) );
+          strcat ( ASS_CARD._BUFCARD.OPERAND, RAB );
+          ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = '\'';
+          SETCOMM ( "Store halfword init" );
+         }
+        ZKARD ();
        }
-     }
+      else if ( SYM [i].TYPE == 'D' )
+       {
+        char plop[20];
+        memcpy ( ASS_CARD._BUFCARD.OPERAC, "DC", 2 );
+        sprintf ( plop, "PL%s\'%ld\'", SYM[i].RAZR, VALUE(SYM[i].INIT) );
+        strcpy ( ASS_CARD._BUFCARD.OPERAND, plop );
+        ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+        SETCOMM ( "Store pdec init" );
+        ZKARD ();
+       }
    }
-						  /* next is declarative    */
-						  /* assembler EQU-ops      */
-						  /* defining base and      */
-						  /* working registers      */
-						  /* of general purpose     */
-						  /*                        */
 
-  memcpy ( ASS_CARD._BUFCARD.METKA, "RBASE", 5 ); /* form EQU-pseudo-op   */
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* for working register   */
-  memcpy ( ASS_CARD._BUFCARD.OPERAND, "15", 2 );  /* number 15              */
-						  /* of general purpose     */
-						  /*                        */
-  ZKARD ();                                       /* store it               */
+  for ( ei = 0; ei < NEXTRA; ei++ )
+   {
+    char plop[20];
+    strcpy ( ASS_CARD._BUFCARD.METKA, EXTRA[ei].name );
+    ASS_CARD._BUFCARD.METKA[strlen(EXTRA[ei].name)] = ' ';
+    memcpy ( ASS_CARD._BUFCARD.OPERAC, "DC", 2 );
+    sprintf ( plop, "PL%d\'%s\'", EXTRA[ei].size, EXTRA[ei].value );
+    strcpy ( ASS_CARD._BUFCARD.OPERAND, plop );
+    ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+    SETCOMM ( "Store packed const" );
+    ZKARD ();
+   }
 
-  memcpy ( ASS_CARD._BUFCARD.METKA, "RRAB", 4 );  /* form EQU-pseudo-op   */
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU",3 );   /* for working register   */
-  memcpy ( ASS_CARD._BUFCARD.OPERAND, "5", 1 );   /* number 5               */
-						  /* of general purpose     */
-						  /*                        */
-  ZKARD ();                                       /* store it               */
+  if ( NEXTRA > 0 )
+   {
+    memcpy ( ASS_CARD._BUFCARD.OPERAC, "DS", 2 );
+    strcpy ( ASS_CARD._BUFCARD.OPERAND, "0F" );
+    ASS_CARD._BUFCARD.OPERAND[2] = ' ';
+    SETCOMM ( "Align next item" );
+    ZKARD ();
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "END", 3 );  /* form assembler         */
-						  /* pseudo-op END code,    */
-						  /*                        */
-  i = 0;
+    memcpy ( ASS_CARD._BUFCARD.METKA, "@BUF", 4 );
+    ASS_CARD._BUFCARD.METKA[4] = ' ';
+    memcpy ( ASS_CARD._BUFCARD.OPERAC, "DC", 2 );
+    strcpy ( ASS_CARD._BUFCARD.OPERAND, "PL8\'0\'" );
+    ASS_CARD._BUFCARD.OPERAND[6] = ' ';
+    SETCOMM ( "Clear packed BUF" );
+    ZKARD ();
+   }
 
-  while ( FORMT [1][i] != '\x0' )                 /* its operand            */
-   ASS_CARD._BUFCARD.OPERAND [i] = FORMT [1][i++];/*         and            */
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@RBASE", 6 );
+  ASS_CARD._BUFCARD.METKA[6] = ' ';
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "5", 1 );
+  SETCOMM ( "Set @RBASE=5" );
+  ZKARD ();
 
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment           */
-			  "End of program", 15 );
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@R1", 3 );
+  ASS_CARD._BUFCARD.METKA[3] = ' ';
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "6", 1 );
+  SETCOMM ( "Set @R1=6" );
+  ZKARD ();
 
-  ZKARD ();                                       /* store pseudo-op        */
-						  /*                        */
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@R2", 3 );
+  ASS_CARD._BUFCARD.METKA[3] = ' ';
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "2", 1 );
+  SETCOMM ( "Set @R2=2" );
+  ZKARD ();
 
-  return 0;                                       /* program completion       */
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@R3", 3 );
+  ASS_CARD._BUFCARD.METKA[3] = ' ';
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "3", 1 );
+  SETCOMM ( "Set @R3=3" );
+  ZKARD ();
+
+  memcpy ( ASS_CARD._BUFCARD.METKA, "@RVIX", 5 );
+  ASS_CARD._BUFCARD.METKA[5] = ' ';
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "EQU", 3 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND, "14", 2 );
+  SETCOMM ( "Set @RVIX=14" );
+  ZKARD ();
+
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "END", 3 );
+  SETCOMM ( "Program ends" );
+  ZKARD ();
+
+  return 0;
  }
 
 /*..........................................................................*/
@@ -1565,58 +1688,39 @@ int OPA2 ()
  {
   int i;
 
-  FORM ();                                        /*format PL1 operator     */
-						  /*of arithmetic assign.   */
+  FORM ();
 
   for ( i = 0; i < ISYM; i++ )
-   {                                              /* if right part identif. */
-						  /* defined earlier via    */
-    if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&  /* DCL operator, then:    */
-	 strlen ( SYM [i].NAME ) ==               /*                        */
-			     strlen ( FORMT [0] )
-       )
+   {
+    if ( !strcmp ( SYM [i].NAME, FORMT [0] )  &&
+         strlen ( SYM [i].NAME ) == strlen ( FORMT [0] ) )
+     {
+      if ( SYM [i].TYPE == 'B' )
        {
-	  if ( SYM [i].TYPE == 'B' )              /* if this identifier     */
-	   {                                      /* has type bin fixed,    */
+        if ( PENDING_LABEL[0] != '\0' )
+         {
+          strcpy ( ASS_CARD._BUFCARD.METKA, PENDING_LABEL );
+          ASS_CARD._BUFCARD.METKA[strlen(PENDING_LABEL)] = ' ';
+          PENDING_LABEL[0] = '\0';
+         }
 
-	    if ( strcmp ( SYM [i].RAZR, "15" )    /* if bin fixed (15),     */
-					    <= 0 )
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* form command           */
-				       "STH", 3 );/* for halfword write     */
-
-	    else                                  /* otherwise:             */
-	     memcpy ( ASS_CARD._BUFCARD.OPERAC,   /* command for word write */
-					"ST", 2 );
-
-	    strcpy ( ASS_CARD._BUFCARD.OPERAND,   /*       complete         */
-					"RRAB," );/*          operands      */
-
-	    strcat ( ASS_CARD._BUFCARD.OPERAND,   /*           of command   */
-				      FORMT [0]) ;
-
-	    ASS_CARD._BUFCARD.OPERAND [ strlen    /*              and       */
-	    ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
-
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* line comment           */
-	    "Form arithmetic expression value",
-					     37 );
-	    ZKARD ();                             /* store operation        */
-						  /* of Assembler and       */
-	    return 0;                             /* complete program       */
-	   }
-
-	  else                                    /* if identifier does not */
-						  /* have type bin fixed,   */
-	   return 3;                              /* completion with diagn. */
-						  /* of error               */
+        memcpy ( ASS_CARD._BUFCARD.OPERAC, "STH", 3 );
+        strcpy ( ASS_CARD._BUFCARD.OPERAND, RESULT_REG );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, "," );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [0] );
+        ASS_CARD._BUFCARD.OPERAND[strlen(ASS_CARD._BUFCARD.OPERAND)] = ' ';
+        if ( !strcmp ( RESULT_REG, "@R3" ) )
+          SETCOMM ( "Store bool ->C" );
+        else
+          SETCOMM ( "Store int ->C" );
+        ZKARD ();
+        return 0;
        }
+      else
+        return 3;
+     }
    }
-  return 4;                                       /* if identifier not */
-						  /* defined earlier via */
-						  /* PL1 DCL operator, then*/
-						  /* completion with diagn.*/
-						  /* error                 */
-
+  return 4;
  }
 
 /*..........................................................................*/
@@ -1644,24 +1748,23 @@ int OPR2 ()
 
   memcpy ( ASS_CARD._BUFCARD.OPERAC, "START", 5 );/* complete code and oper- */
   memcpy ( ASS_CARD._BUFCARD.OPERAND, "0", 1 );   /* ands in START-pseudo-op*/
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* of Assembler    */
-		      "Start of program", 16 );
+  SETCOMM ( "Init rel addr=0" );
   ZKARD ();                                       /* store Assembler card*/
 						  /*                   */
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 ); /* form BALR-operation*/
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* Assembler             */
-				  "RBASE,0", 7 );
-  memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Load base register", 22 );
-  ZKARD ();                                       /* and store it        */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,
+				  "@RBASE,0", 8 );
+  ASS_CARD._BUFCARD.OPERAND[8] = ' ';
+  SETCOMM ( "Set @RBASE=cur PC" );
+  ZKARD ();
 
-  memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );/* form USING-pseudo-op*/
-  memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* of Assembler    */
-				   "*,RBASE", 7 );
-  memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Set register as base", 23 );
-  ZKARD ();                                       /* and store it        */
+  memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );
+  memcpy ( ASS_CARD._BUFCARD.OPERAND,
+				   "*,@RBASE", 8 );
+  ASS_CARD._BUFCARD.OPERAND[8] = ' ';
+  SETCOMM ( "Use @RBASE for addr" );
+  ZKARD ();
 
   return 0;                                       /* complete subroutine */
  }

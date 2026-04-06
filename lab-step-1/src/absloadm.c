@@ -631,6 +631,14 @@ int main( int argc, char **argv )                 /* p r o g r a m          */
      }
     fclose ( fp );                                /*close SPISOK file       */
 
+    for ( I = 0; I < ISPIS; I++ )                 /*trim path lines (fgets) */
+     {
+      char *p = SPISOK [I];
+      size_t lenp = strlen ( p );
+      while ( lenp > 0 && ( p [lenp-1] == '\n' || p [lenp-1] == '\r' ) )
+        p [--lenp] = '\x0';
+     }
+
     if ( ISPIS == 0 )                             /*if list is empty        */
 						                                      /*then:                   */
      goto ERR2;                                   /* error message          */

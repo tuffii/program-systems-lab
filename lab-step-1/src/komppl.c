@@ -898,6 +898,20 @@ FORM1:
   return;
  }
 
+/* COMM: wrong memcpy lengths copied '\\0' and junk; strcpy leaves '\\0' in
+   METKA/OPERAND — editors then mis-detect encoding. SETCOMM + ZKARD fix. */
+#define COMM_MAX 52
+static void
+SETCOMM ( const char *s )
+ {
+  int j;
+  memset ( ASS_CARD._BUFCARD.COMM, ' ', COMM_MAX );
+  if ( !s )
+   return;
+  for ( j = 0; j < COMM_MAX && s[j] != '\0'; j++ )
+   ASS_CARD._BUFCARD.COMM[j] = s[j];
+ }
+
 /*..........................................................................*/
 						  /* p r o g r a m          */
 void ZKARD ()                                     /* for writing next gen.  */
@@ -905,10 +919,13 @@ void ZKARD ()                                     /* for writing next gen.  */
                                                   /*array                   */
                                                   /* ASSTXT                 */
   char i;
+  for ( i = 0; i < 80; i++ )
+   if ( ASS_CARD.BUFCARD[i] == '\0' )
+    ASS_CARD.BUFCARD[i] = ' ';
   memcpy ( ASSTXT [ IASSTXT++ ],
 			   ASS_CARD.BUFCARD, 80 );
 
-  for ( i = 0; i < 79; i++ )
+  for ( i = 0; i < 80; i++ )
    ASS_CARD.BUFCARD [i] = ' ';
   return;
  }
@@ -1228,8 +1245,7 @@ int AVI2 ()
 	    ASS_CARD._BUFCARD.OPERAND [ strlen    /* insert separator       */
 	     ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
 
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* and line comment       */
-	     "Load variable to register", 29 );
+	    SETCOMM ( "Load variable to register" );
 
 	    ZKARD ();                             /* store assembler op.    */
 						                                /* and                    */
@@ -1304,9 +1320,7 @@ int AVI2 ()
 	    ASS_CARD._BUFCARD.OPERAND [ strlen
 		  ( ASS_CARD._BUFCARD.OPERAND )] =      /* - separator space;          */
 					      ' ';
-	    memcpy ( ASS_CARD._BUFCARD.COMM,
-	   "Form intermediate value",             /* - line comment              */
-					     36 );
+	    SETCOMM ( "Form intermediate value" );
 	    ZKARD ();                             /* store assembler             */
 						                                /* operation                   */
 
@@ -1461,8 +1475,7 @@ int OEN2 ()
 
   memcpy ( ASS_CARD._BUFCARD.OPERAND,"15,14", 5 );/* command operands and   */
 
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment field     */
-		       "Exit from program", 18 );
+  SETCOMM ( "Exit from program" );
 
   ZKARD ();                                       /* store operation        */
 						  /* of Assembler           */
@@ -1506,8 +1519,7 @@ int OEN2 ()
 	ASS_CARD._BUFCARD.OPERAND [ strlen        /* closing apostrophe     */
 	 ( ASS_CARD._BUFCARD.OPERAND ) ] = '\'';  /*          and             */
 
-	memcpy ( ASS_CARD._BUFCARD.COMM,          /* line comment field     */
-		 "Variable definition", 22 );
+	SETCOMM ( "Variable definition" );
 
 	ZKARD ();                                 /* store operation        */
 						  /*    of Assembler        */
@@ -1543,8 +1555,7 @@ int OEN2 ()
   while ( FORMT [1][i] != '\x0' )                 /* its operand            */
    ASS_CARD._BUFCARD.OPERAND [i] = FORMT [1][i++];/*         and            */
 
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* line comment           */
-			  "End of program", 15 );
+  SETCOMM ( "End of program" );
 
   ZKARD ();                                       /* store pseudo-op        */
 						  /*                        */
@@ -1597,9 +1608,7 @@ int OPA2 ()
 	    ASS_CARD._BUFCARD.OPERAND [ strlen    /*              and       */
 	    ( ASS_CARD._BUFCARD.OPERAND ) ] = ' ';
 
-	    memcpy ( ASS_CARD._BUFCARD.COMM,      /* line comment           */
-	    "Form arithmetic expression value",
-					     37 );
+	    SETCOMM ( "Form arithmetic expression value" );
 	    ZKARD ();                             /* store operation        */
 						  /* of Assembler and       */
 	    return 0;                             /* complete program       */
@@ -1644,23 +1653,20 @@ int OPR2 ()
 
   memcpy ( ASS_CARD._BUFCARD.OPERAC, "START", 5 );/* complete code and oper- */
   memcpy ( ASS_CARD._BUFCARD.OPERAND, "0", 1 );   /* ands in START-pseudo-op*/
-  memcpy ( ASS_CARD._BUFCARD.COMM,                /* of Assembler    */
-		      "Start of program", 16 );
+  SETCOMM ( "Start of program" );
   ZKARD ();                                       /* store Assembler card*/
 						  /*                   */
 
   memcpy ( ASS_CARD._BUFCARD.OPERAC, "BALR", 4 ); /* form BALR-operation*/
   memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* Assembler             */
 				  "RBASE,0", 7 );
-  memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Load base register", 22 );
+  SETCOMM ( "Load base register" );
   ZKARD ();                                       /* and store it        */
 
   memcpy ( ASS_CARD._BUFCARD.OPERAC, "USING", 5 );/* form USING-pseudo-op*/
   memcpy ( ASS_CARD._BUFCARD.OPERAND,             /* of Assembler    */
 				   "*,RBASE", 7 );
-  memcpy ( ASS_CARD._BUFCARD.COMM,
-		  "Set register as base", 23 );
+  SETCOMM ( "Set register as base" );
   ZKARD ();                                       /* and store it        */
 
   return 0;                                       /* complete subroutine */

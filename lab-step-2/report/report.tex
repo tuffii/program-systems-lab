@@ -1,0 +1,177 @@
+%!TEX program = xelatex
+\documentclass[a4paper,14pt]{extarticle}
+
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\setsansfont{Liberation Sans}
+\setmonofont{Liberation Mono}
+\newfontfamily\cyrillicfonttt{Liberation Mono}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+
+\usepackage{geometry}
+\geometry{a4paper,left=30mm,right=15mm,top=20mm,bottom=20mm}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
+
+\usepackage{fancyhdr}
+\setlength{\headheight}{17pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{float}
+
+\lstdefinestyle{PLIstyle}{
+  basicstyle=\small\ttfamily,
+  numbers=none,
+  breaklines=true,
+  frame=single,
+  showstringspaces=false
+}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+
+\captionsetup[figure]{name=Рис.,labelsep=period}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+  \textbf{Санкт-Петербургский политехнический университет}\\
+  \textbf{Институт компьютерных наук и технологий}\\
+  \textbf{Высшая школа программной инженерии}\\[2cm]
+
+  {\large Отчёт по этапу 2 (модификация синтаксического анализатора)}\\[0.5cm]
+  {\large Компилятор с ЯВУ (подмножество PL/I)}\\[1.5cm]
+
+  Дисциплина: «Системы программирования»\\[0.5cm]
+  Вариант~№~11\\[1.5cm]
+\end{center}
+
+\vfill
+\begin{center}
+  Санкт-Петербург\\
+  2026
+\end{center}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Задание и целевая программа}
+
+По согласованию с преподавателем персональный вариант~№~11 задаётся исходной
+программой следующего вида (без обязательной разрядности \texttt{(15)} в
+объявлениях \texttt{BIN FIXED}; инициализация десятичным литералом \texttt{3}):
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=PLIstyle]
+EX11: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED INIT ( 3 );
+DCL B DEC FIXED INIT ( 3 );
+DCL C BIN FIXED;
+C = B * 5;
+C = A = C;
+END EX11;
+\end{lstlisting}
+\caption{Персональный вариант (целевой синтаксис)}
+\label{fig:variant}
+\end{figure}
+
+Контрольный пример макета --- программа \texttt{examppl.pli} (демонстрация
+преподавателя) должна по-прежнему успешно обрабатываться.
+
+\section{Ключевые решения по замечаниям преподавателя}
+
+\subsection{Нетерминалы \texttt{LID}, \texttt{ZNL} и матрица \texttt{TPR}}
+
+В макете столбцы матрицы смежности \texttt{TPR} индексируются только
+\textbf{нетерминалами} (число столбцов \texttt{NNETRM}). Символы \texttt{LID}
+(десятичный литерал в \texttt{INIT} для \texttt{DEC FIXED}) и \texttt{ZNL}
+(логический знак «\texttt{=}» в отличие от арифметических \texttt{ZNK}) должны
+иметь номера столбцов \texttt{0..NNETRM-1}. Поэтому в таблице \texttt{VXOD}
+нетерминалы \texttt{LID} и \texttt{ZNL} размещаются \textbf{сразу после}
+\texttt{ZNK} (индексы 16 и~17), а не в хвосте таблицы: иначе функция
+\texttt{numb()} возвращает индекс строки терминала и происходит выход за границы
+\texttt{TPR[][0..NNETRM-1]}.
+
+\subsection{Пять вариантов \texttt{ODC}}
+
+Для пункта~8 методички фиксируются пять альтернатив \texttt{<ODC>}:
+\texttt{BIN FIXED} без разрядности; \texttt{BIN FIXED} с разрядностью;
+\texttt{BIN FIXED} с \texttt{INIT(LIT)} (с разрядностью или без --- в
+реализации задаётся ветвями \texttt{SINT}); \texttt{DEC FIXED} без разрядности;
+\texttt{DEC FIXED} с разрядностью; объявления \texttt{DEC} с \texttt{INIT(LID)}.
+В отчётной грамматике \texttt{INIT} для \texttt{DEC} связывается с
+\texttt{LID}, для \texttt{BIN} --- с \texttt{LIT}.
+
+\subsection{Разделение \texttt{ZNK} и \texttt{ZNL}}
+
+Арифметические знаки (\texttt{+}, \texttt{-}, \texttt{*}) остаются в
+\texttt{ZNK}. Терминал «\texttt{=}» вводит нетерминал \texttt{ZNL} (правила
+\texttt{226--228} в \texttt{SINT[]}) для разбора сравнения в конструкциях вида
+\texttt{C = A = C;}.
+
+\subsection{Оператор присваивания и правая часть}
+
+В тексте методички правая часть может обозначаться как \texttt{LVI}; в текущей
+реализации макета распознавание выполняется через нетерминал \texttt{AVI} с
+расширенными ветвями (в т.\,ч. умножение и вложенное использование
+\texttt{=}).
+
+\subsection{Формат входного файла}
+
+Исходный текст читается блоками по 80~байт (\texttt{fread}). Необходимо
+представлять исходный текст в формате «карт» фиксированной длины (как в
+\texttt{examppl.pli} из \texttt{lab-step-1}), без разрыва лексем на границе
+карты.
+
+\section{Модификация грамматики (фрагмент)}
+
+Ниже --- фрагмент правил с выделением изменений (курсивом) по сравнению с базовой
+грамматикой шага~1:
+
+\begin{enumerate}
+  \item $\langle\text{TEL}\rangle ::= \langle\text{ODC}\rangle \mid \langle\text{TEL}\rangle\langle\text{ODC}\rangle \mid \langle\text{TEL}\rangle\langle\text{OPA}\rangle$
+  \item $\langle\text{ODC}\rangle$ --- пять альтернатив: \texttt{BIN FIXED} (с разрядностью или без, с \texttt{INIT(LIT)} или без), \texttt{DEC FIXED} (с разрядностью или без), \texttt{DEC} с \texttt{INIT(LID)}; в реализации задаётся ветвями \texttt{SINT[]}.
+  \item $\langle\text{LID}\rangle ::= \langle\text{MAN}\rangle$ (десятичный литерал для \texttt{DEC})
+  \item $\langle\text{OPA}\rangle ::= \langle\text{IPE}\rangle\texttt{=}\langle\text{AVI}\rangle\texttt{;}$
+\end{enumerate}
+
+\section{Состояние реализации в \texttt{komppl.c}}
+
+В каталоге \texttt{lab-step-2/src/komppl.c} заданы:
+\texttt{\#define NSINT 320}, \texttt{NNETRM 18}, \texttt{NVXOD 54}; таблица
+\texttt{VXOD} упорядочена так, что первые 18 записей --- нетерминалы
+(\texttt{AVI}.. \texttt{ZNK}, \texttt{LID}, \texttt{ZNL}); далее --- терминалы.
+Матрица \texttt{TPR} имеет размер \texttt{NV}$\times$\texttt{NNETRM}; в строке
+\texttt{TEL} отмечена достижимость \texttt{ZNL}; для термина «\texttt{=}»
+указаны и \texttt{ZNK}, и \texttt{ZNL} (по смыслу разных веток разбора).
+
+Тестовые файлы: \texttt{lab-step-2/input/examppl.pli} (копия эталона из
+\texttt{lab-step-1}) и \texttt{lab-step-2/input/ex11.pli} (в формате карт
+80~символов). Полная целевая строка \texttt{C = A = C;} и объявления без явной
+разрядности требуют доводки ветвей \texttt{SINT[]} и семантики и могут
+документироваться на следующих этапах.
+
+% Обрезка отчёта: далее по методичке следует листинг с правилами 201--231 в SINT[] --- не включается.
+
+\end{document}

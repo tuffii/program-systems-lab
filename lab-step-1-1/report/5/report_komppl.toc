@@ -1,0 +1,9 @@
+\babel@toc {russian}{}\relax 
+\contentsline {section}{\numberline {1}Задание на курсовую работу}{3}{section.1}%
+\contentsline {section}{\numberline {2}Постановка задачи модификации макета в части компилятора с ЯВУ}{6}{section.2}%
+\contentsline {section}{\numberline {3}Модификация состава и структуры БД макета компилятора с ЯВУ}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Модификация БД лексического анализатора}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Модификация БД синтаксического анализатора}{9}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Модификация алгоритма макета компилятора с ЯВУ}{13}{section.4}%
+\contentsline {section}{\numberline {5}Результаты экспериментальной проверки модифицированного компилятора с ЯВУ}{14}{section.5}%
+\contentsline {section}{\numberline {6}Выводы по результатам работы}{15}{section.6}%

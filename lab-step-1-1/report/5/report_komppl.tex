@@ -1,16 +1,15 @@
-%!TEX program = lualatex
+%!TEX program = xelatex
 \documentclass[a4paper,14pt]{extarticle}
 
 % === Кодировка и язык ===
 \usepackage{fontspec}
-\usepackage[russian]{babel}
-% Иначе символ " активен и ломает \texttt{"..."} в тексте
-\AtBeginDocument{\shorthandoff{"}}
-% DejaVu: полная кириллица; сборка через lualatex обходит сбой xdvipdfmx на pfb у некоторых конфигураций
-\defaultfontfeatures{Ligatures=TeX}
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
+\setmainfont{Liberation Serif}
+\setsansfont{Liberation Sans}
+\setmonofont{Liberation Mono}
+
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
 
 % === Геометрия страницы ===
 \usepackage{geometry}
@@ -41,11 +40,6 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{listings}
-% Для листингов с breaklines=true (C): без выключки и без «лестницы» переносов
-\lstset{breakautoindent=false,breakindent=0pt}
-\makeatletter
-\lst@AddToHook{Init}{\raggedright}
-\makeatother
 \usepackage{xcolor}
 \usepackage{tabularx}
 \usepackage{booktabs}
@@ -53,7 +47,9 @@
 \usepackage{longtable}
 \usepackage{float}
 
-% === Листинги кода (как в report/4; переносы — только по пробелам для PL/1 и ASM) ===
+\usepackage{needspace}
+
+% === Листинги кода ===
 \lstdefinestyle{Cstyle}{
   language=C,
   basicstyle=\small\ttfamily,
@@ -65,17 +61,35 @@
   stepnumber=1,
   numbersep=6pt,
   breaklines=true,
+  breakautoindent=false,
+  breakindent=0pt,
+  columns=fullflexible,
+  keepspaces=true,
+  aboveskip=\medskipamount,
+  belowskip=\medskipamount,
   frame=single,
   tabsize=2,
   showstringspaces=false,
-  extendedchars=true
+  extendedchars=true,
+  inputencoding=utf8
 }
+\captionsetup[lstlisting]{
+  labelfont=bf,
+  font=small,
+  skip=12pt,
+  belowskip=8pt,
+  margin=2ex,
+  format=plain,
+  justification=raggedright,
+  singlelinecheck=false
+}
+\newcommand{\codeskip}{\par\vspace{0.55\baselineskip}}
+\newcommand{\blocktitle}[1]{\par\needspace{4\baselineskip}\noindent\textbf{#1}\par\vspace{0.35\baselineskip}}
 
-% PL/1 и ASM в отчёте: без автопереноса — подставляются заранее разбитые файлы snippets/*
 \lstdefinestyle{ASMstyle}{
   basicstyle=\small\ttfamily,
   numbers=none,
-  breaklines=false,
+  breaklines=true,
   frame=single,
   tabsize=8,
   showstringspaces=false
@@ -84,27 +98,25 @@
 \lstdefinestyle{PLIstyle}{
   basicstyle=\small\ttfamily,
   numbers=none,
-  breaklines=false,
+  breaklines=true,
   frame=single,
   showstringspaces=false
 }
 
 % === Гиперссылки ===
 \usepackage[hidelinks]{hyperref}
-% Пути к файлам: \texttt + \detokenize (совместимо с listings / fontspec)
-\newcommand{\fpath}[1]{\texttt{\detokenize{#1}}}
 
 % === Прочее ===
 \usepackage{enumitem}
 \usepackage{amsmath}
 \usepackage{indentfirst}
 \setlength{\parindent}{1.25cm}
-% Нетерминал в math: \text{PRO} с polyglossia/fontspec часто даёт пустые латинские буквы
-\newcommand{\NT}[1]{\langle\mathrm{#1}\rangle}
 
-% === Подписи к рисункам (как в этапах 1–4) ===
+% === Подписи к рисункам ===
 \captionsetup[figure]{name=Рис.,labelsep=period}
 \captionsetup[table]{name=Таблица,labelsep=period}
+
+\newcommand{\fpath}[1]{\texttt{\detokenize{#1}}}
 
 \begin{document}
 \sloppy
@@ -131,7 +143,7 @@
   \begin{tabular}{ll}
     Исполнители: & Студенты группы~5140904/50102\\
                  & Сырбу~Г.~В.\\
-                 & Федерова~С.~К.\\[0.5cm]
+                 & Федорова~С.~К.\\[0.5cm]
     Руководитель: & Расторгуев~В.~Я.\\
   \end{tabular}
 \end{flushright}
@@ -151,7 +163,7 @@
 \newpage
 
 % ============================================================
-% РАЗДЕЛ 1. ЗАДАНИЕ НА КУРСОВУЮ РАБОТУ
+% РАЗДЕЛ 1 — по отчёту 4 (корректный фрагмент)
 % ============================================================
 \section{Задание на курсовую работу}
 
@@ -163,22 +175,45 @@
 конструкции языка высокого уровня, примененные в соответствующем варианте».
 \end{quote}
 
-Общая формулировка персонализирована в варианте~№~11. Исходная постановка задания
-содержала один оператор \texttt{C = A = (B * 5);} в теле процедуры. По согласованию
-с преподавателем вложенное выражение со скобками заменено двумя последовательными
-операторами присваивания; актуальный исходный текст персонального варианта хранится
-в файле \fpath{input/ex11.pli} (рис.~\ref{fig:variant_mod}).
+Общая формулировка персонализирована в варианте~№~11, приведённом на рис.~\ref{fig:variant}.
 
 \begin{figure}[H]
 \centering
-\lstinputlisting[style=PLIstyle]{snippets/ex11_display.pli}
-\caption{Персональный вариант~№~11 (\fpath{input/ex11.pli}; в отчёте — тот же текст из \fpath{snippets/ex11_display.pli} без полей пробелов 80-колоночной разрядки)}
+\begin{lstlisting}[style=PLIstyle]
+EX11: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED INIT ( 3 );
+DCL B DEC FIXED INIT ( 3 );
+DCL C BIN FIXED;
+C = A = ( B * 5 );
+END EX11;
+\end{lstlisting}
+\caption{Персональный вариант~№~11}
+\label{fig:variant}
+\end{figure}
+
+По договорённости с преподавателем в персональный вариант были внесены
+изменения, касающиеся использования скобок в арифметических выражениях:
+вложенное выражение со скобками было разделено на два последовательных
+оператора присваивания. В результате была сформулирована следующая входная
+программа (рис.~\ref{fig:variant_mod}):
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=PLIstyle]
+EX11: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED INIT ( 3 );
+DCL B DEC FIXED INIT ( 3 );
+DCL C BIN FIXED;
+C = B * 5;
+C = A = C;
+END EX11;
+\end{lstlisting}
+\caption{Модифицированный персональный вариант~№~11 (согласованный с преподавателем)}
 \label{fig:variant_mod}
 \end{figure}
 
-Схема функционирования макета учебной системы программирования приведена на
-рис.~\ref{fig:arch}. Согласно заданию на КР этот макет входит в число элементов
-исходных данных.
+Схема функционирования макета учебной системы программирования, являющегося
+согласно заданию на КР одним из элементов исходных данных, приведена на рис.~\ref{fig:arch}.
 
 \begin{figure}[H]
 \centering
@@ -200,8 +235,8 @@
   \item объектный эквивалент исходной программы готовится в формате объектных файлов
         ОС IBM~370 и хранится в виде двоичного файла с расширением \texttt{*.tex};
   \item загрузочный эквивалент исходной программы представляет собой машинный код
-        IBM~370, запоминаемый в области ОЗУ технологической ЭВМ; эта область служит
-        зоной загрузки для эмулятора объектной ЭВМ.
+        IBM~370, запоминаемый в области ОЗУ технологической ЭВМ, являющейся зоной
+        загрузки для эмулятора объектной ЭВМ.
 \end{itemize}
 
 В данном отчёте документируются результаты модификации макетного компилятора с~ЯВУ
@@ -214,41 +249,62 @@
 
 \begin{figure}[H]
 \centering
-\lstinputlisting[style=PLIstyle]{snippets/examppl_display.pli}
-\caption{Демонстрационный пример (\fpath{input/examppl.pli}; для отчёта — \fpath{snippets/examppl_display.pli})}
+\begin{lstlisting}[style=PLIstyle]
+EXAMP: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED ( 31 ) INIT ( 11B  );
+DCL B BIN FIXED ( 31 ) INIT ( 100B );
+DCL C BIN FIXED ( 31 ) INIT ( 101B );
+DCL D BIN FIXED ( 31 );
+D = A + B - C;
+END EXAMP;
+\end{lstlisting}
+\caption{Демонстрационный пример (\texttt{examppl.pli})}
 \label{fig:demo}
 \end{figure}
 
 \subsection*{Отличия персонального варианта от демонстрационного примера}
 
-При сравнении файлов \fpath{input/ex11.pli} и \fpath{input/examppl.pli}
-(рис.~\ref{fig:variant_mod} и рис.~\ref{fig:demo}) выявлены следующие отличия:
+Модифицированный персональный вариант~№~11 (рис.~\ref{fig:variant_mod})
+приведён ниже:
 
-\begin{enumerate}[leftmargin=*,itemsep=0.35em]
-  \item В \fpath{input/examppl.pli} для всех объявлений \texttt{BIN FIXED} указана
-        разрядность \texttt{(31)}, инициализация задана двоичными литералами
-        \texttt{11B}, \texttt{100B}, \texttt{101B}. В \fpath{input/ex11.pli} для
-        \texttt{BIN FIXED} указана разрядность \texttt{(15)}, инициализация
-        \texttt{A} и \texttt{B} задана литералом \texttt{11B} (двоичная запись
-        значения~3).
+\begin{lstlisting}[style=PLIstyle]
+EX11: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED INIT ( 3 );
+DCL B DEC FIXED INIT ( 3 );
+DCL C BIN FIXED;
+C = B * 5;
+C = A = C;
+END EX11;
+\end{lstlisting}
 
-  \item В \fpath{input/ex11.pli} переменная \texttt{B} объявлена как
-        \texttt{DEC FIXED (3)}; в \fpath{input/examppl.pli} все переменные —
-        \texttt{BIN FIXED}.
+При визуальном сравнении модифицированного персонального варианта~№~11
+и демонстрационного примера (рис.~\ref{fig:demo}) выявлены следующие отличия:
 
-  \item Оператор \texttt{C = B * 5;} в \fpath{input/ex11.pli} использует «\texttt{*}»
-        для умножения упакованного десятичного \texttt{B} на однозначный
-        десятичный множитель \texttt{5}. В \fpath{input/examppl.pli} операция
-        «\texttt{*}» не встречается.
+\begin{enumerate}
+  \item Переменные в персональном варианте объявляются без указания
+        разрядности (без параметра в скобках), а инициализация задаётся
+        десятичным целочисленным литералом (например, \texttt{3}) вместо
+        двоичного (\texttt{11B}).
 
-  \item Оператор \texttt{C = A = C;} в \fpath{input/ex11.pli} задаёт сравнение
-        \texttt{A} и \texttt{C} во второй позиции присваивания; в формальной
-        грамматике (разд.~3) правая часть моделируется как \texttt{<AVL>}, оператор
-        --- как \texttt{<OPL>}. В \fpath{input/examppl.pli} такой конструкции нет.
+  \item В персональном варианте введена переменная \texttt{B} типа
+        \texttt{DEC FIXED} (упакованный десятичный формат), тогда как в
+        демонстрационном примере все переменные имеют тип \texttt{BIN FIXED}
+        (двоичный формат с фиксированной точкой).
+
+  \item В операторе \texttt{C = B * 5;} применяется операция умножения «\texttt{*}»
+        упакованного десятичного операнда на десятичный целочисленный литерал,
+        отсутствующая в демонстрационном примере.
+
+  \item В операторе \texttt{C = A = C;} применяется знак логической операции
+        «\texttt{=}» (сравнение) в правой части оператора присваивания,
+        формирующий булево (логическое) значение; в модифицированной грамматике
+        правая часть описывается нетерминалом \texttt{<AVL>}, а оператор в целом
+        — нетерминалом \texttt{<OPL>} (см.\ раздел~3). Эта конструкция отсутствует
+        в демонстрационном примере.
 \end{enumerate}
 
 % ============================================================
-% РАЗДЕЛ 2. ПОСТАНОВКА ЗАДАЧИ
+% РАЗДЕЛ 2 — по отчёту 4; подраздел «Согласованные ограничения» исключён
 % ============================================================
 \section{Постановка задачи модификации макета в части компилятора с ЯВУ}
 
@@ -268,31 +324,42 @@
 
 \begin{figure}[H]
 \centering
-\lstinputlisting[style=ASMstyle]{snippets/ex11_display.ass}
-\caption{Эталон ассемблерного эквивалента (\fpath{report/5/etalon/ex11.ass}; для отчёта — \fpath{snippets/ex11_display.ass}, по строкам как в листинге)}
+\begin{lstlisting}[style=ASMstyle]
+  Метка       КОП       Операнды              Пояснения
+EX11     START  0            Init rel addr=0
+         BALR   @RBASE,0     Set @RBASE=cur PC
+         USING  *,@RBASE     Use @RBASE for addr
+         ZAP    @BUF(8),B(3) Copy pdec B->BUF
+         MP     @BUF(8),@FIVE(1) Mul BUF by 5->BUF
+         CVB    @R1,@BUF     pdec BUF ->int @R1
+         STH    @R1,C        Store int ->C
+         LH     @R2,A        Load A ->@R2
+         CH     @R2,C        Compare @R2 with C
+         BC     8,@TRUE      Branch if equal
+         LA     @R3,0        Set @R3=0 (F)
+         B      @SAVE        Jump to save
+@TRUE    LA     @R3,1        Set @R3=1 (T)
+@SAVE    STH    @R3,C        Store bool ->C
+         BCR    15,@RVIX     Return to caller
+A        DC     H'3'         Store halfword init
+B        DC     PL3'3'       Store pdec init
+C        DS     H            Reserve halfword
+@FIVE    DC     PL1'5'       Store packed const
+         DS     0F           Align next item
+@BUF     DC     PL8'0'       Clear packed BUF
+@RBASE   EQU    5            Set @RBASE=5
+@R1      EQU    6            Set @R1=6
+@R2      EQU    2            Set @R2=2
+@R3      EQU    3            Set @R3=3
+@RVIX    EQU    14           Set @RVIX=14
+         END                 Program ends
+\end{lstlisting}
+\caption{Эталон ассемблерного эквивалента персонального варианта~№~11}
 \label{fig:etalon}
 \end{figure}
 
-\subsection*{Согласованные функциональные ограничения}
-
-По согласованию с преподавателем в модифицированном макетном компиляторе сохраняются
-и уточняются следующие ограничения (согласованы с программой рис.~\ref{fig:variant_mod} и эталоном рис.~\ref{fig:etalon}):
-
-\begin{enumerate}[leftmargin=*,itemsep=0.35em]
-  \item Компилятор не задаёт повышенный приоритет умножения в \texttt{<AVI>}: вычисление ведётся
-        последовательно слева направо для операций «\texttt{+}», «\texttt{-}», «\texttt{*}».
-
-  \item В операторе \texttt{C = B * 5;} (файл \fpath{input/ex11.pli}) множитель \texttt{5} ---
-        одна десятичная цифра. В секции данных для него резервируется упакованная константа
-        \texttt{@FIVE} (рис.~\ref{fig:etalon}).
-
-  \item Сравнение в операторе \texttt{C = A = C;} оформлено как \texttt{<AVL>} с операндами
-        \texttt{A} и \texttt{C} (оба \texttt{BIN FIXED} в \fpath{input/ex11.pli}). Результат сравнения
-        --- \texttt{0} или \texttt{1} в полуслове; записывается в~\texttt{C}.
-\end{enumerate}
-
 % ============================================================
-% РАЗДЕЛ 3. МОДИФИКАЦИЯ БД КОМПИЛЯТОРА
+% РАЗДЕЛ 3 — по отчёту 4 до подраздела «Модификация таблицы SINT[]»
 % ============================================================
 \section{Модификация состава и структуры БД макета компилятора с ЯВУ}
 
@@ -349,35 +416,35 @@ void compress_ISXTXT()
 демонстрационного примера выделены курсивом:
 
 \begin{enumerate}
-  \item $\NT{PRO} ::= \NT{OPR}\NT{TEL}\NT{OEN}$
-  \item $\NT{OPR} ::= \NT{IPR}\texttt{:PROC\_OPTIONS(MAIN);}$
-  \item $\NT{IPR} ::= \NT{IDE}$
-  \item $\NT{IDE} ::= \NT{BUK} \mid \NT{IDE}\NT{BUK} \mid \NT{IDE}\NT{CIF}$
-  \item $\NT{BUK} ::= \texttt{A} \mid \texttt{B} \mid \texttt{C} \mid \texttt{D} \mid \texttt{E} \mid \texttt{M} \mid \texttt{P} \mid \texttt{X}$
-  \item $\NT{CIF} ::= \texttt{0} \mid \texttt{1} \mid \texttt{2} \mid \texttt{3} \mid \texttt{4} \mid \texttt{5} \mid \texttt{6} \mid \texttt{7} \mid \texttt{8} \mid \texttt{9}$
-  \item $\NT{TEL} ::= \NT{ODC} \mid \NT{TEL}\NT{ODC} \mid \NT{TEL}\NT{OPA} \mid \NT{TEL}\NT{OPL}$
-  \item $\NT{ODC} ::= \texttt{DCL\_}\NT{IPE}\texttt{\_BIN\_FIXED(}\NT{RZR}\texttt{);}$\\
-        $\mid\; \texttt{DCL\_}\NT{IPE}\texttt{\_BIN\_FIXED(}\NT{RZR}\texttt{)INIT(}\NT{LIT}\texttt{);}$\\
-        \textit{$\mid\; \texttt{DCL\_}\NT{IPE}\texttt{\_BIN\_FIXED;}$}\\
-        \textit{$\mid\; \texttt{DCL\_}\NT{IPE}\texttt{\_BIN\_FIXED\_INIT(}\NT{LID}\texttt{);}$}\\
-        \textit{$\mid\; \texttt{DCL\_}\NT{IPE}\texttt{\_DEC\_FIXED\_INIT(}\NT{LID}\texttt{);}$}
-  \item $\NT{IPE} ::= \NT{IDE}$
-  \item $\NT{RZR} ::= \NT{CIF} \mid \NT{RZR}\NT{CIF}$
-  \item $\NT{LIT} ::= \NT{MAN}\texttt{B}$
-  \item $\NT{MAN} ::= \texttt{1} \mid \NT{MAN}\texttt{0} \mid \NT{MAN}\texttt{1}$
-  \item \textit{$\NT{LID} ::= \NT{CIF} \mid \NT{LID}\NT{CIF}$}
-  \item $\NT{OPA} ::= \NT{IPE}\texttt{=}\NT{AVI}\texttt{;}$
-  \item $\NT{AVI} ::= \NT{LIT} \mid \NT{LID} \mid \NT{IPE}$\\
-        $\mid\; \NT{AVI}\NT{ZNK}\NT{LIT}
-        \mid \NT{AVI}\NT{ZNK}\NT{LID}
-        \mid \NT{AVI}\NT{ZNK}\NT{IPE}$
-  \item $\NT{AVL} ::= \NT{AVI}\NT{ZNL}\NT{LIT}
-        \mid \NT{AVI}\NT{ZNL}\NT{LID}
-        \mid \NT{AVI}\NT{ZNL}\NT{IPE}$
-  \item $\NT{OPL} ::= \NT{IPE}\texttt{=}\NT{AVL}\texttt{;}$
-  \item $\NT{ZNK} ::= \texttt{+} \mid \texttt{-}$ \textit{$\mid\; \texttt{*}$}
-  \item \textit{$\NT{ZNL} ::= \texttt{=}$}
-  \item $\NT{OEN} ::= \texttt{END\_}\NT{IPR}$
+  \item $\langle\text{PRO}\rangle ::= \langle\text{OPR}\rangle\langle\text{TEL}\rangle\langle\text{OEN}\rangle$
+  \item $\langle\text{OPR}\rangle ::= \langle\text{IPR}\rangle\texttt{:PROC\_OPTIONS(MAIN);}$
+  \item $\langle\text{IPR}\rangle ::= \langle\text{IDE}\rangle$
+  \item $\langle\text{IDE}\rangle ::= \langle\text{BUK}\rangle \mid \langle\text{IDE}\rangle\langle\text{BUK}\rangle \mid \langle\text{IDE}\rangle\langle\text{CIF}\rangle$
+  \item $\langle\text{BUK}\rangle ::= \texttt{A} \mid \texttt{B} \mid \texttt{C} \mid \texttt{D} \mid \texttt{E} \mid \texttt{M} \mid \texttt{P} \mid \texttt{X}$
+  \item $\langle\text{CIF}\rangle ::= \texttt{0} \mid \texttt{1} \mid \texttt{2} \mid \texttt{3} \mid \texttt{4} \mid \texttt{5} \mid \texttt{6} \mid \texttt{7} \mid \texttt{8} \mid \texttt{9}$
+  \item $\langle\text{TEL}\rangle ::= \langle\text{ODC}\rangle \mid \langle\text{TEL}\rangle\langle\text{ODC}\rangle \mid \langle\text{TEL}\rangle\langle\text{OPA}\rangle \mid \langle\text{TEL}\rangle\langle\text{OPL}\rangle$
+  \item $\langle\text{ODC}\rangle ::= \texttt{DCL\_}\langle\text{IPE}\rangle\texttt{\_BIN\_FIXED(}\langle\text{RZR}\rangle\texttt{);}$\\
+        $\mid\; \texttt{DCL\_}\langle\text{IPE}\rangle\texttt{\_BIN\_FIXED(}\langle\text{RZR}\rangle\texttt{)INIT(}\langle\text{LIT}\rangle\texttt{);}$\\
+        \textit{$\mid\; \texttt{DCL\_}\langle\text{IPE}\rangle\texttt{\_BIN\_FIXED;}$}\\
+        \textit{$\mid\; \texttt{DCL\_}\langle\text{IPE}\rangle\texttt{\_BIN\_FIXED\_INIT(}\langle\text{LID}\rangle\texttt{);}$}\\
+        \textit{$\mid\; \texttt{DCL\_}\langle\text{IPE}\rangle\texttt{\_DEC\_FIXED\_INIT(}\langle\text{LID}\rangle\texttt{);}$}
+  \item $\langle\text{IPE}\rangle ::= \langle\text{IDE}\rangle$
+  \item $\langle\text{RZR}\rangle ::= \langle\text{CIF}\rangle \mid \langle\text{RZR}\rangle\langle\text{CIF}\rangle$
+  \item $\langle\text{LIT}\rangle ::= \langle\text{MAN}\rangle\texttt{B}$
+  \item $\langle\text{MAN}\rangle ::= \texttt{1} \mid \langle\text{MAN}\rangle\texttt{0} \mid \langle\text{MAN}\rangle\texttt{1}$
+  \item \textit{$\langle\text{LID}\rangle ::= \langle\text{CIF}\rangle \mid \langle\text{LID}\rangle\langle\text{CIF}\rangle$}
+  \item $\langle\text{OPA}\rangle ::= \langle\text{IPE}\rangle\texttt{=}\langle\text{AVI}\rangle\texttt{;}$
+  \item $\langle\text{AVI}\rangle ::= \langle\text{LIT}\rangle \mid \langle\text{LID}\rangle \mid \langle\text{IPE}\rangle$\\
+        $\mid\; \langle\text{AVI}\rangle\langle\text{ZNK}\rangle\langle\text{LIT}\rangle
+        \mid \langle\text{AVI}\rangle\langle\text{ZNK}\rangle\langle\text{LID}\rangle
+        \mid \langle\text{AVI}\rangle\langle\text{ZNK}\rangle\langle\text{IPE}\rangle$
+  \item $\langle\text{AVL}\rangle ::= \langle\text{AVI}\rangle\langle\text{ZNL}\rangle\langle\text{LIT}\rangle
+        \mid \langle\text{AVI}\rangle\langle\text{ZNL}\rangle\langle\text{LID}\rangle
+        \mid \langle\text{AVI}\rangle\langle\text{ZNL}\rangle\langle\text{IPE}\rangle$
+  \item $\langle\text{OPL}\rangle ::= \langle\text{IPE}\rangle\texttt{=}\langle\text{AVL}\rangle\texttt{;}$
+  \item $\langle\text{ZNK}\rangle ::= \texttt{+} \mid \texttt{-}$ \textit{$\mid\; \texttt{*}$}
+  \item \textit{$\langle\text{ZNL}\rangle ::= \texttt{=}$}
+  \item $\langle\text{OEN}\rangle ::= \texttt{END\_}\langle\text{IPR}\rangle$
 \end{enumerate}
 
 Пояснения к метасимволам:
@@ -423,34 +490,38 @@ void compress_ISXTXT()
 \end{table}
 
 По сравнению с грамматикой демонстрационного примера модифицированы правила:
-\begin{itemize}[leftmargin=*,itemsep=0.35em]
-  \item \textbf{Правило~7 (\texttt{<TEL>}):} в формальной записи добавлена альтернатива
-        \texttt{<TEL><OPL>}. В таблице \texttt{SINT[]} для нетерминала \texttt{TEL}
-        заданы только ветви с \texttt{ODC} и \texttt{OPA}; отдельного значения
-        \texttt{DER="OPL"} в \texttt{VXOD[]} нет. Операторы вида \texttt{C = A = C;}
-        разбираются как \texttt{<OPA>}: цепочка \texttt{IPE = AVI ;}, а сравнение во
-        второй части присваивания обрабатывается внутри \texttt{<AVI>} при встрече
-        второго «\texttt{=}» как элемента \texttt{ZNK} (записи \texttt{SINT[]}
-        226--228, вход «\texttt{=}» в \texttt{VXOD[]} с \texttt{VX}=226).
-
-  \item \textbf{Правило~8 (\texttt{<ODC>}):} для файлов \fpath{input/examppl.pli} и
-        \fpath{input/ex11.pli} используются объявления \texttt{BIN FIXED} и
-        \texttt{DEC FIXED} с явной разрядностью в скобках; инициализация задаётся
-        двоичными литералами \texttt{<LIT>} (\texttt{11B} и~т.\,п.) в обоих примерах
-        там, где в исходнике указано \texttt{INIT ( \ldots B )}.
-
-  \item \textbf{Правило~13 (\texttt{<LID>}):} нетерминал описывает цепочки цифр для
-        десятичной записи (в т.\,ч.\ множитель \texttt{5} в \texttt{C = B * 5;}).
-
-  \item \textbf{Правила~15--17 (\texttt{<AVI>}, \texttt{<AVL>}, \texttt{<OPL>}):}
-        расширен \texttt{<AVI>}, введены \texttt{<AVL>} и \texttt{<OPL>} для модели
-        сравнения и присваивания булева результата.
-
-  \item \textbf{Правило~18 (\texttt{<ZNK>}):} добавлен знак «\texttt{*}».
-
-  \item \textbf{Правило~19 (\texttt{<ZNL>}):} введён знак сравнения «\texttt{=}»,
-        не смешиваемый с арифметическими «\texttt{+}»/«\texttt{-}»/«\texttt{*}» в
-        одном нетерминале \texttt{<ZNK>}.
+\begin{itemize}
+  \item \textbf{Правило~7 (\texttt{<TEL>}):} добавлена альтернатива
+        \texttt{<TEL><OPL>} для операторов присваивания с логическим выражением
+        в правой части;
+  \item \textbf{Правило~8 (\texttt{<ODC>}):} в подмножестве, используемом
+        демонстрационным примером и модифицированным персональным вариантом~№~11,
+        сохранены объявления \texttt{BIN FIXED} с разрядностью и двоичной
+        инициализацией (демонстрационный пример), а также объявления без
+        разрядности и с инициализацией десятичным литералом \texttt{<LID>}
+        (персональный вариант); альтернативы \texttt{DEC FIXED} с указанием
+        разрядности и без инициализации исключены как не встречающиеся в
+        указанных программах;
+  \item \textbf{Правило~13 (\texttt{<LID>}):} введён новый нетерминал
+        для десятичного целочисленного литерала (аналог \texttt{<LIT>} для
+        десятичной записи), используемый при объявлении переменных без
+        разрядности и в арифметических выражениях;
+  \item \textbf{Правило~15 (\texttt{<AVI>}):} добавлена возможность применения
+        нетерминала~\texttt{<LID>} как самостоятельного операнда; логические
+        комбинации со знаком \texttt{<ZNL>} вынесены в отдельное правило
+        \texttt{<AVL>} (правило~16);
+  \item \textbf{Правило~16 (\texttt{<AVL>}):} введён нетерминал логического
+        выражения — сравнение двух операндов посредством \texttt{<ZNL>}, где
+        левый операнд задаётся \texttt{<AVI>};
+  \item \textbf{Правило~17 (\texttt{<OPL>}):} введён оператор присваивания
+        с правой частью \texttt{<AVL>} (аналог \texttt{<OPA>} для логических
+        выражений);
+  \item \textbf{Правило~18 (\texttt{<ZNK>}):} к знакам «\texttt{+}» и
+        «\texttt{-}» добавлен знак «\texttt{*}» (умножение);
+  \item \textbf{Правило~19 (\texttt{<ZNL>}):} введён нетерминал для знака
+        логической операции «\texttt{=}» (сравнение), не входящий в
+        \texttt{<ZNK>}; различение арифметических и логических знаков
+        производится по контексту их использования в грамматике.
 \end{itemize}
 
 В состав нетерминальных символов после модификации добавлены нетерминалы
@@ -460,127 +531,529 @@ void compress_ISXTXT()
 
 \subsubsection*{Модификация таблицы синтаксических правил \texttt{SINT[]}}
 
-Таблица \texttt{SINT[]} реализует двунаправленный список с альтернативными
-ветвлениями, в котором каждая запись описывает один шаг распознавания (форма
-распознавания — от правой части к нетерминалу). В ходе модификации:
+Синтаксический разбор в макете реализован детерминированным конечным автоматом:
+каждая запись таблицы \texttt{SINT[]} связана с предыдущей полем \texttt{PRED}.
+Нарушение этой связи приводит к аварийному завершению трансляции. Для новых
+конструкций добавлены изолированные цепочки правил, которые на финальном шаге
+перенаправляют поток управления в штатные точки свёртки нетерминалов.
 
-\begin{itemize}
-  \item задано \texttt{\#define NSINT~232}; добавлены ветви \texttt{DEC FIXED} (201--225),
-        «\texttt{*}» (198--200), «\texttt{=}» в выражении (226--228), операнд \texttt{RZR} в \texttt{AVI} (229--231);
-        изменено поле \texttt{ALT} у записи~168;
-  \item в \texttt{VXOD[]}: для «\texttt{*}» поле \texttt{VX}=198, для «\texttt{=}» --- \texttt{VX}=226;
-  \item в \texttt{TPR[][]} обновлены отношения для «\texttt{*}», «\texttt{=}» и \texttt{ZNK}.
+Объём таблицы увеличен: ранее задавалось \texttt{NSINT~201}, после доработки —
+\texttt{NSINT~310}, иначе новые ветви не помещаются в массив.
+
+\needspace{8\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Расширение массива правил},label=lst:nsint]
+#define NSINT     310                             /* - syntax rules table;  */
+\end{lstlisting}
+
+\blocktitle{Основная ветвь \texttt{DCL \ldots BIN FIXED} (записи 59--73)}
+
+Ранее макет фактически требовал явной разрядности в скобках после \texttt{FIXED}.
+После «\texttt{(}» введены альтернативы \texttt{ALT}: путь без \texttt{INIT},
+путь \texttt{INIT(\ldots)} и вспомогательные цепочки \texttt{232}/\texttt{246}.
+После распознавания \texttt{ODC} запись~\texttt{73} переводит автомат
+в~\texttt{64} — в «родную» точку завершения ветви \texttt{BIN} (а не
+в~\texttt{63}), чтобы сокращение не зацикливало разбор и не уводило индекс
+позиции~\texttt{I} в отрицательную область при откате.
+
+\needspace{14\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Записи 59--73: разбор \texttt{BIN FIXED}},label=lst:sint_bin]
+ /* 59 */ {  60 ,   58 , "(  " ,  232 },
+ /* 60 */ {  61 ,   59 , "RZR" ,    0 },
+ /* 61 */ {  62 ,   60 , ")  " ,    0 },
+ /* 62 */ {  63 ,   61 , ";  " ,   65 },
+ /* 63 */ {  64 ,   62 , "ODC" ,    0 },
+ /* 64 */ {   0 ,   63 , "*  " ,    0 },
+ /* 65 */ {  66 ,   61 , "I  " ,    0 },
+ /* 66 */ {  67 ,   65 , "N  " ,    0 },
+ /* 67 */ {  68 ,   66 , "I  " ,    0 },
+ /* 68 */ {  69 ,   67 , "T  " ,    0 },
+ /* 69 */ {  70 ,   68 , "(  " ,    0 },
+ /* 70 */ {  71 ,   69 , "LIT" ,  246 },
+ /* 71 */ {  72 ,   70 , ")  " ,    0 },
+ /* 72 */ {  73 ,   71 , ";  " ,    0 },
+ /* 73 */ {  64 ,   72 , "ODC" ,    0 },
+\end{lstlisting}
+\textit{Порядок полей в строках: \texttt{\{POSL, PRED, DER, ALT\}}.}
+
+\blocktitle{Ветка \texttt{DEC FIXED} после выбора \texttt{CHAR} или \texttt{DEC} (187--224)}
+
+У записи~\texttt{187} поле \texttt{ALT}=201 переключает разбор с ключевого
+\texttt{CHAR(\ldots)} на цепочку \texttt{DEC FIXED}. Записи \texttt{201--209}
+повторяют структуру объявления для упакованного типа; \texttt{ALT}=250 на
+записи~\texttt{210} подключает зеркальную вспомогательную цепочку для
+\texttt{INIT}, аналогичную ветке \texttt{BIN}.
+
+\needspace{12\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Записи 187 и 201--210, 224},label=lst:sint_dec_entry]
+ {/*.  187     .*/   188 ,    49 , "C  " ,  201 },
+ {/*.  201     .*/   202 ,    49 , "D  " ,    0 },
+ {/*.  202     .*/   203 ,   201 , "E  " ,    0 },
+ {/*.  203     .*/   204 ,   202 , "C  " ,    0 },
+ {/*.  204     .*/   205 ,   203 , "   " ,    0 },
+ {/*.  205     .*/   206 ,   204 , "F  " ,    0 },
+ {/*.  206     .*/   207 ,   205 , "I  " ,    0 },
+ {/*.  207     .*/   208 ,   206 , "X  " ,    0 },
+ {/*.  208     .*/   209 ,   207 , "E  " ,    0 },
+ {/*.  209     .*/   210 ,   208 , "D  " ,    0 },
+ /* 210 */ { 211 ,  209 , "(  " ,  250 },
+ /* 224 */ { 214 ,  223 , "ODC" ,    0 },
+\end{lstlisting}
+
+\blocktitle{Замыкание тела программы (запись 186)}
+
+Поле \texttt{PRED} для записи~\texttt{186} изменено с~\texttt{73} на~\texttt{181}:
+после последнего оператора объявления управление возвращается к корректному
+предшественнику в разборе \texttt{TEL}.
+
+\needspace{5\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Запись 186},label=lst:sint_tel186]
+ {/*.  186     .*/     0 ,   181 , "*  " ,    0 },
+\end{lstlisting}
+
+\blocktitle{Изолированная цепочка \texttt{BIN FIXED} без обязательной разрядности в скобках (232--246)}
+
+Для обхода ситуации, когда после \texttt{FIXED} допускается пробел и ключевое
+слово \texttt{INIT}, построена следующая цепочка переходов:
+
+\begin{itemize}[nosep,leftmargin=*]
+  \item \texttt{232}: обработка пробела после \texttt{FIXED};
+  \item \texttt{233}: поиск \texttt{INIT}; при несовпадении по \texttt{ALT} —
+        переход к~\texttt{241} (завершающая \texttt{;});
+  \item \texttt{234--237}: линейный разбор фрагмента \texttt{INIT(};
+  \item \texttt{238}: разбор литерала; поле \texttt{ALT}=240 допускает ветку
+        \texttt{RZR} (десятичная цифра);
+  \item \texttt{241}/\texttt{242}: входы для \texttt{;} (краткий вариант
+        \texttt{BIN FIXED;} и вариант с \texttt{INIT(\ldots)}); запись~\texttt{241}
+        ведёт в~\texttt{63} — штатную точку, из которой далее распознаётся
+        \texttt{ODC} для объявления.
 \end{itemize}
 
-\subsubsection*{Связь грамматики разд.~3 с реализацией}
+\needspace{10\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Фрагмент цепочки 232--246 (\texttt{BIN})},label=lst:sint_bin_aux]
+ /* 232 */ { 233 ,   58 , "   " , 233 },
+ /* 233 */ { 234 ,   58 , "I  " , 241 },
+ /* 234 */ { 235 ,  233 , "N  " ,   0 },  /* PRED(234)=233 */
+ /* 235 */ { 236 ,  234 , "I  " ,   0 },
+ /* 236 */ { 237 ,  235 , "T  " ,   0 },
+ /* 237 */ { 238 ,  236 , "(  " ,   0 },
+ /* 238 */ { 239 ,  237 , "LIT" , 240 },
+ /* 239 */ { 242 ,  238 , ")  " ,   0 },
+ /* 240 */ { 239 ,  237 , "RZR" ,   0 },
+ /* 241 */ {  63 ,   58 , ";  " ,   0 },
+ /* 242 */ {  63 ,  239 , ";  " ,   0 },
+ /* 246 */ {  71 ,   69 , "RZR" ,   0 },
+\end{lstlisting}
+
+\blocktitle{Изолированная цепочка \texttt{DEC FIXED} (250--265)}
+
+Создана аналогичная цепочка для десятичного объявления: разбор конструкции
+\texttt{FIXED INIT(}, затем точки \texttt{257}/\texttt{260} для завершающей
+\texttt{;}. У финальных переходов поле \texttt{POSL} равно~\texttt{214}: это
+«родная» точка свёртки ветви \texttt{DEC}, откуда далее вызывается семантика
+(в~т.\,ч.\ генерация \texttt{ZAP} для упакованного типа). Запись~\texttt{256}
+ожидает \texttt{LIT} и при \texttt{ALT}=258 допускает \texttt{RZR}; после литерала
+автомат переходит к~\texttt{259} (закрывающая «\texttt{)}»), затем к~\texttt{260}
+перед завершающей \texttt{;}.
+
+\needspace{12\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Фрагмент цепочки 250--265 (\texttt{DEC})},label=lst:sint_dec_aux]
+ /* 250 */ { 251 ,  209 , "   " , 251 },
+ /* 251 */ { 252 ,  209 , "I  " , 257 },
+ /* 252 */ { 253 ,  251 , "N  " ,   0 },
+ /* 253 */ { 254 ,  252 , "I  " ,   0 },
+ /* 254 */ { 255 ,  253 , "T  " ,   0 },
+ /* 255 */ { 256 ,  254 , "(  " ,   0 },
+ /* 256 */ { 259 ,  255 , "LIT" , 258 },
+ /* 257 */ { 214 ,  209 , ";  " ,   0 },
+ /* 258 */ { 259 ,  255 , "RZR" ,   0 },
+ /* 259 */ { 260 ,  256 , ")  " ,   0 },
+ /* 260 */ { 214 ,  259 , ";  " ,   0 },
+ /* 265 */ { 222 ,  220 , "RZR" ,   0 },
+\end{lstlisting}
+
+\blocktitle{Десятичный инициализатор в \texttt{INIT}}
+
+В правилах~\texttt{70} (\texttt{BIN}) и~\texttt{221} (\texttt{DEC}) добавлены
+альтернативы \texttt{ALT} на~\texttt{246} и~\texttt{265}: подсистема распознавания
+может принять нетерминал \texttt{RZR} там, где ранее допускался только двоичный
+литерал \texttt{LIT}.
+
+\blocktitle{Выражение \texttt{AVI}: умножение, сравнение, операнд \texttt{RZR}}
+
+Запись~\texttt{168} с \texttt{ALT}=229 задаёт правый операнд \texttt{IPE} или
+цепочку \texttt{RZR}. Записи \texttt{198--200} вводят «\texttt{*}» как терминал,
+ведущий к \texttt{ZNK}. Записи \texttt{226--228} задают второй символ «\texttt{=}»
+как знак внутри \texttt{AVI} (сравнение).
+
+\needspace{12\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Фрагмент разбора \texttt{AVI}},label=lst:sint_avi]
+ {/*.  168     .*/   169 ,   165 , "IPE" ,  229 },
+ {/*.  197     .*/     0 ,   166 , "*  " ,    0 },
+ {/*.  198     .*/   199 ,     0 , "*  " ,    0 },
+ {/*.  199     .*/   200 ,   198 , "ZNK" ,    0 },
+ {/*.  200     .*/     0 ,   199 , "*  " ,    0 },
+ {/*.  226     .*/   227 ,     0 , "=  " ,    0 },
+ {/*.  227     .*/   228 ,   226 , "ZNK" ,    0 },
+ {/*.  228     .*/     0 ,   227 , "*  " ,    0 },
+ {/*.  229     .*/   230 ,   165 , "RZR" ,    0 },
+ {/*.  230     .*/   231 ,   229 , "AVI" ,    0 },
+\end{lstlisting}
+
+\blocktitle{Записи 103--106: разбор \texttt{IDE}, \texttt{IPE}, \texttt{IPR}}
+
+Ранее записи~\texttt{104} и~\texttt{106} завершали распознавание ссылкой на нуль,
+что давало ложный «успех» при пустом хвосте идентификатора. Заданы согласованные
+переходы на~\texttt{103} и~\texttt{105}, чтобы дождаться следующих лексем.
+
+\needspace{8\baselineskip}
+\begin{lstlisting}[style=Cstyle,caption={Записи 103--106},label=lst:sint_ide]
+ {/*.  103     .*/   104 ,    96 , "IPE" ,  105 },
+ {/*.  104     .*/   103 ,   103 , "*  " ,    0 },
+ {/*.  105     .*/   106 ,    96 , "IPR" ,    0 },
+ {/*.  106     .*/   105 ,   105 , "*  " ,    0 },
+\end{lstlisting}
+
+\subsubsection*{Модификация таблицы входов \texttt{VXOD[]} и матрицы \texttt{TPR[][]}}
+
+Символ «\texttt{=}» в потоке терминалов должен открывать куст \texttt{ZNK} с
+корнем~\texttt{226}; ранее \texttt{VX} был~\texttt{0}, и второй знак равенства в
+\texttt{C = A = C} не распознавался.
+
+\begin{lstlisting}[style=Cstyle,caption={Таблица \texttt{VXOD[]}: входы для «\texttt{=}» и «\texttt{*}»},label=lst:vxod]
+  {/*.  50     .*/   "=  " , 226 , 'T' },
+  ...
+  {/*.  52     .*/   "*  " , 198 , 'T' }
+\end{lstlisting}
+\textbf{Пояснение.} \texttt{VX}=226 и~\texttt{VX}=198 задают стартовые индексы в
+\texttt{SINT[]} для цепочек сравнения и умножения.
+
+Матрица \texttt{TPR[][]} задаёт допустимые пары «текущий символ / нетерминал на
+стеке». Для строк «\texttt{+}», «\texttt{-}», «\texttt{*}», «\texttt{=}» в столбце
+\texttt{ZNK} (последний столбец) выставлены единицы, чтобы знак мог следовать за
+левым подвыражением \texttt{AVI}:
+
+\begin{lstlisting}[style=Cstyle,caption={Фрагмент \texttt{TPR[][]}: столбец \texttt{ZNK} для знаков операций},label=lst:tpr]
+  {/*  +*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  },
+  {/*  -*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  },
+  {/*  =*/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  },
+  {/*  **/ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1  }
+\end{lstlisting}
+\textbf{Пояснение.} До модификации в строке «\texttt{=}» в столбце \texttt{ZNK}
+стоял~\texttt{0}, из-за чего разбор \texttt{ZNK} по входу «\texttt{=}» блокировался.
+
+\subsubsection*{Связь грамматики разд.~3 с реализацией в \fpath{komppl.c}}
 
 Нетерминалы \texttt{<LID>}, \texttt{<ZNL>}, \texttt{<AVL>}, \texttt{<OPL>} задают
-учебную модель языка. В программе \fpath{src/komppl.c} отдельные строки \texttt{VXOD[]}
-для имён \texttt{LID}, \texttt{ZNL}, \texttt{AVL}, \texttt{OPL} не используются:
-десятичные цифры множителя в \texttt{C = B * 5;} распознаются как терминалы
-\texttt{CIF}, сравнение во втором «\texttt{=}» --- через записи \texttt{SINT[]}
-226--228 и элемент \texttt{VXOD[]} для лексемы «\texttt{=}» (\texttt{VX}=226), что
-семантически соответствует \texttt{<AVL>} и \texttt{<ZNL>}. Семантика присваивания
-(включая запись результата сравнения) вызывается для \texttt{OPA} второго прохода
---- функция \texttt{OPA2()}; отдельной функции \texttt{OPL2()} нет.
+учебную модель языка. В программе отдельные строки \texttt{VXOD[]} для имён
+\texttt{LID}, \texttt{ZNL}, \texttt{AVL}, \texttt{OPL} не заводятся: цифры
+множителя в \texttt{C = B * 5;} распознаются как терминалы \texttt{CIF}, второе
+«\texttt{=}» в \texttt{C = A = C;} обрабатывается через цепочку \texttt{SINT[]}
+226--228 совместно с полем \texttt{VX} для «\texttt{=}». Семантика присваивания
+реализована в \texttt{OPA2()} для всех операторов вида \texttt{IPE = \ldots;}.
 
-Для ветви \texttt{DEC FIXED \ldots INIT(\ldots)} в \texttt{SINT[]} в правой части
-инициализации стоит распознавание через нетерминал \texttt{LIT} (см.\ записи
-с \texttt{DER="LIT"} после \texttt{INIT}), а не через отдельную ветку \texttt{LID}.
-Семантика \texttt{ODC1()} записывает строку инициализации в \texttt{SYM[].INIT};
-для \texttt{DEC FIXED} значение интерпретируется по контексту объявления.
+В \texttt{sint\_ANAL()} перед обращением к \texttt{STROKA[I]} добавлена проверка
+границы массива сжатой строки; при выходе индекса за допустимый диапазон возвращается
+код ошибки. Устранён дефект бесконечного обратного хода (\emph{backtracking}),
+возникавший при несогласованности поля \texttt{PRED} в альтернативных ветвях
+таблицы: при откате индекс позиции~\texttt{I} мог становиться отрицательным;
+добавлена жёсткая проверка \texttt{if~(I~<~0)} (совместно с проверкой верхней
+границы). Для отладки выводится шаг разбора (\texttt{printf}); для «чистого»
+листинга вывод можно отключить.
 
 % ============================================================
-% РАЗДЕЛ 4. МОДИФИКАЦИЯ АЛГОРИТМА
+% РАЗДЕЛ 4 — изменения алгоритма с выдержками из komppl.c
 % ============================================================
 \section{Модификация алгоритма макета компилятора с ЯВУ}
 
-Реализация находится в файле \fpath{src/komppl.c} каталога \fpath{lab-step-1-1}.
-Ключевые функции второго прохода:
+Ниже перечислены изменения в \fpath{komppl.c} в порядке, удобном для сопоставления
+с разд.~3: синтаксический анализ, глобальные данные, первый и второй проходы.
 
-\begin{itemize}
-  \item \textbf{\texttt{ODC1()}} --- типы \texttt{BIN}/\texttt{DEC FIXED}, таблица \texttt{SYM[]}, инициализация;
-  \item \textbf{\texttt{AVI2()}} --- операнды, \texttt{+}/\texttt{-}/\texttt{*}, \texttt{ZAP}/\texttt{MP}/\texttt{CVB}; при \texttt{op\_sign == '='}
-        вызывается \texttt{avl2\_emit\_compare\_rhs()};
-  \item \textbf{\texttt{avl2\_emit\_compare\_rhs()}} --- генерация сравнения (рис.~\ref{fig:etalon});
-  \item \textbf{\texttt{OPA2()}} --- \texttt{STH} и \texttt{PENDING\_LABEL} (и для арифметики, и для булева результата);
-  \item \textbf{\texttt{OEN2()}} --- секция данных, \texttt{EXTRA[]}, \texttt{@BUF}, \texttt{END};
-  \item \textbf{\texttt{OPR2()}} --- \texttt{START}, \texttt{BALR}, \texttt{USING}.
-\end{itemize}
+\subsection{Синтаксический анализ: \texttt{sint\_ANAL()}}
 
-Используются \texttt{SETCOMM()}, \texttt{const\_label()}, глобальные \texttt{RESULT\_REG}, \texttt{PENDING\_LABEL}, \texttt{EXTRA[]}
-(листинг~\ref{lst:globals4}).
+Перед чтением \texttt{STROKA[I]} индекс проверяется: отрицательное~\texttt{I}
+прерывает разбор с кодом ошибки (это подавляет бесконечный откат при неверных
+связях \texttt{PRED}), верхняя граница исключает выход за пределы буфера. Добавлен
+пошаговый отладочный вывод (его можно убрать при финальной сборке).
 
-\begin{lstlisting}[style=Cstyle,caption={Фрагмент \texttt{komppl.c}},label=lst:globals4]
+\begin{lstlisting}[style=Cstyle,caption={Проверка индекса \texttt{I} и отладочный вывод шага разбора},label=lst:sint_anal]
+  I++;
+  if (I < 0 || I >= NSTROKA) return 1;
+  printf("Step: I=%d (char '%c'), J=%d, Rule_Der='%.3s', Pred=%d\n", 
+    I, STROKA[I], J, SINT[J].DER, SINT[J].PRED);
+\end{lstlisting}
+\textbf{Пояснение.} Условие \texttt{I~<~0} — ключевое для остановки «зацикленного»
+отката; вторая часть проверки ограничивает \texttt{I} длиной сжатой строки.
+Вывод \texttt{printf} фиксирует состояние автомата при отладке таблицы
+\texttt{SINT[]}.
+
+\subsection{Глобальные данные генерации кода}
+
+Введены регистр результата выражения, метка для отложенной \texttt{STH} после
+ветвления сравнения и таблица дополнительных упакованных констант (множитель
+\texttt{5} и~т.\,п.):
+
+\begin{lstlisting}[style=Cstyle,caption={Строки состояния между семантическими вызовами},label=lst:globals]
 char RESULT_REG[9] = "@R2";
 char PENDING_LABEL[9] = "";
-struct { char name[9]; char type; int size; char value[10]; } EXTRA[20];
+
+struct {
+    char name[9];
+    char type;
+    int  size;
+    char value[10];
+} EXTRA[20];
 int NEXTRA = 0;
-static void avl2_emit_compare_rhs ( const char *rhs_name ) { /* ... */ }
 \end{lstlisting}
+\textbf{Пояснение.} \texttt{RESULT\_REG} задаёт источник для \texttt{STH} после
+арифметики или сравнения; \texttt{PENDING\_LABEL} связывает булеву цепочку с
+карточкой сохранения; \texttt{EXTRA[]} хранит \texttt{@FIVE} и аналоги для секции
+данных.
+
+\subsection{\texttt{SETCOMM()} — поле комментария карточки}
+
+Подстановка комментария не затирает «хвост» длинного операнда, оставшийся в поле
+\texttt{COMM}:
+
+\begin{lstlisting}[style=Cstyle,caption={Запись \texttt{COMM} с сохранением хвоста операнда},label=lst:setcomm]
+#define COMM_LIM 25
+void SETCOMM ( const char *s )
+{
+  int i;
+  int prefix = 0;
+  while ( prefix < 52 && ASS_CARD._BUFCARD.COMM[prefix] != ' ' ) prefix++;
+
+  int start = prefix;
+  if ( prefix > 0 && prefix + 1 < 52 ) start = prefix + 1;
+
+  for ( i = start; i < 52; i++ )
+    ASS_CARD._BUFCARD.COMM[i] = ' ';
+
+  if ( !s ) return;
+  for ( i = 0; i < COMM_LIM && s[i] != '\0' && start + i < 52; i++ )
+    ASS_CARD._BUFCARD.COMM[start + i] = s[i];
+}
+\end{lstlisting}
+\textbf{Пояснение.} Ранее поле затиралось целиком, из-за чего в листинге смешивались
+фрагменты операнда и текста пояснения.
+
+\subsection{\texttt{const\_label()} — символические имена констант}
+
+Для цифр \texttt{0}--\texttt{9} формируются метки \texttt{@ZERO}--\texttt{@NINE};
+иначе — \texttt{@C}$+$строка значения.
+
+\begin{lstlisting}[style=Cstyle,caption={Имя упакованной константы для \texttt{MP}},label=lst:const_label]
+void const_label ( char *buf, const char *val )
+{
+  long v = atol(val);
+  switch ( v )
+   {
+    case 0: sprintf ( buf, "@ZERO" ); break;
+    case 1: sprintf ( buf, "@ONE" ); break;
+    case 2: sprintf ( buf, "@TWO" ); break;
+    case 3: sprintf ( buf, "@THREE" ); break;
+    case 4: sprintf ( buf, "@FOUR" ); break;
+    case 5: sprintf ( buf, "@FIVE" ); break;
+    case 6: sprintf ( buf, "@SIX" ); break;
+    case 7: sprintf ( buf, "@SEVEN" ); break;
+    case 8: sprintf ( buf, "@EIGHT" ); break;
+    case 9: sprintf ( buf, "@NINE" ); break;
+    default: sprintf ( buf, "@C%s", val ); break;
+   }
+}
+\end{lstlisting}
+\textbf{Пояснение.} Имя \texttt{@FIVE} (и аналоги для других цифр) задаётся
+\texttt{const\_label()}. В исходном макете литерал-множитель в выражении не
+попадал в секцию данных автоматически; добавлена регистрация значения во
+вспомогательной таблице \texttt{EXTRA[]}: при обработке правого операнда
+\texttt{AVI2()} ищет строку значения среди уже заведённых записей и при отсутствии
+добавляет новую строку с типом упакованной константы, чтобы в \texttt{OEN2()}
+была сгенерирована директива вида \texttt{DC PL1'5'} с меткой \texttt{@FIVE} и
+этот символ можно было подставить во второй операнд \texttt{MP}.
+
+\subsection{\texttt{VALUE()} — двоичные и десятичные инициализаторы}
+
+Если в строке есть \texttt{'B'}, значение читается как двоичный литерал; иначе
+используется \texttt{atol} (десятичная запись в \texttt{INIT}).
+
+\begin{lstlisting}[style=Cstyle,caption={Интерпретация \texttt{SYM[].INIT}},label=lst:value]
+long int VALUE ( char* s )
+ {
+  long int S;
+  int i, is_bin = 0;
+
+  for ( i = 0; s[i] != '\0'; i++ )
+    if ( s[i] == 'B' ) { is_bin = 1; break; }
+
+  if ( is_bin )
+   {
+    i = 0; S = 0;
+    while ( *(s + i) != 'B' )
+     { S <<= 1; if ( *(s + i) == '1' ) S++; i++; }
+    return (S);
+   }
+  else
+    return atol(s);
+ }
+\end{lstlisting}
+\textbf{Пояснение.} Вариант с \texttt{INIT ( 3 )} и с \texttt{INIT ( 11B )} в
+\texttt{OEN2()} обрабатываются одной функцией.
+
+\subsection{\texttt{FORM()} — разделитель «\texttt{*}»}
+
+Символ умножения добавлен к разделителям лексем при разборе фрагмента в \texttt{FORMT[]}.
+
+\begin{lstlisting}[style=Cstyle,caption={Учёт «\texttt{*}» при нарезке лексем},label=lst:form]
+     if ( STROKA [i] == ':' || STROKA [i] == ' ' ||
+	  STROKA [i] == '(' || STROKA [i] == ')' ||
+	  STROKA [i] == ';' || STROKA [i] == '+' ||
+	  STROKA [i] == '-' || STROKA [i] == '=' ||
+	  STROKA [i] == '*'
+	)
+\end{lstlisting}
+\textbf{Пояснение.} Иначе «\texttt{*}» склеивался бы с соседними символами.
+
+\subsection{Первый проход: \texttt{ODC1()}}
+
+Тип \texttt{BIN}/\texttt{DEC}, разрядность из скобок или значения по умолчанию,
+поиск \texttt{INIT}. Чтобы устранить обращение к \texttt{FORMT[]} при неполной
+строке объявления и тем самым \emph{Segmentation fault}, в начале функции введена
+проверка числа токенов: при \texttt{IFORMT~<~3} обработка прерывается кодом
+ошибки. Ветвь с чтением разрядности из пятого токена выполняется только при
+\texttt{IFORMT~>~4}, иначе индекс~\texttt{4} был бы недопустим.
+
+\begin{lstlisting}[style=Cstyle,caption={Заполнение \texttt{SYM[]} по объявлению (границы \texttt{IFORMT})},label=lst:odc1]
+  FORM ();
+  if (IFORMT < 3) return 2;
+  ...
+  if ( !strcmp ( FORMT [2], "BIN" ) ) SYM [ISYM].TYPE = 'B';
+  else if ( !strcmp ( FORMT [2], "DEC" ) ) SYM [ISYM].TYPE = 'D';
+  else return 2;
+
+  if ( IFORMT > 4 && isdigit(FORMT[4][0]) ) 
+   {
+    strncpy ( SYM [ISYM].RAZR, FORMT [4], 4 );
+    ...
+    cur = 5; 
+   } 
+  else 
+   {
+    strcpy ( SYM [ISYM].RAZR, (SYM[ISYM].TYPE == 'B') ? "15" : "3" );
+    cur = 4; 
+   }
+
+  if ( cur < IFORMT && !strcmp ( FORMT [cur], "INIT" ) )
+   {
+    if (cur + 1 < IFORMT) 
+      strcpy ( SYM [ISYM].INIT, FORMT [cur + 1] );
+    ...
+   }
+\end{lstlisting}
+\textbf{Пояснение.} Условия \texttt{IFORMT~<~3} и \texttt{IFORMT~>~4} задают
+допустимый диапазон индексации по массиву лексем \texttt{FORMT[]}; без них при
+отсутствии скобок с разрядностью возможен выход за границы и падение
+транслятора. Поле \texttt{RAZR} задаёт длину \texttt{PL$n$} в ассемблере;
+\texttt{INIT} передаётся в \texttt{VALUE()} при генерации \texttt{DC}.
+
+\subsection{Второй проход: \texttt{AVI2()} и \texttt{avl2\_emit\_compare\_rhs()}}
+
+Одиночный идентификатор: \texttt{LH} для \texttt{BIN}, \texttt{ZAP} в \texttt{@BUF}
+для \texttt{DEC}. Умножение: \texttt{MP}/\texttt{CVB} и регистрация константы в
+\texttt{EXTRA[]}. Сравнение: вызов \texttt{avl2\_emit\_compare\_rhs()}.
+
+\begin{lstlisting}[style=Cstyle,caption={Фрагмент \texttt{AVI2()}: умножение и сравнение},label=lst:avi2]
+    if ( op_sign == '*' )
+     {
+      ...
+      const_label ( clbl, const_val );
+      sprintf ( opbuf, "@BUF(8),%s(1)", clbl );
+      memcpy ( ASS_CARD._BUFCARD.OPERAC, "MP", 2 );
+      ...
+      strcpy ( RESULT_REG, "@R1" );
+      ...
+     }
+
+    else if ( op_sign == '=' )
+     {
+      avl2_emit_compare_rhs ( FORMT[IFORMT-1] );
+      return 0;
+     }
+\end{lstlisting}
+\textbf{Пояснение.} \texttt{op\_sign} берётся из \texttt{STROKA} по позиции перед
+правым операндом; для «\texttt{=}» правый операнд — имя переменной во второй
+позиции сравнения.
+
+\subsection{\texttt{OPA2()} — запись результата и отложенная метка}
+
+\begin{lstlisting}[style=Cstyle,caption={\texttt{STH} с \texttt{PENDING\_LABEL} и \texttt{RESULT\_REG}},label=lst:opa2]
+      if ( SYM[i].TYPE == 'B' )
+       {
+        if ( PENDING_LABEL[0] != '\0' )
+         {
+          strcpy ( ASS_CARD._BUFCARD.METKA, PENDING_LABEL );
+          ...
+          PENDING_LABEL[0] = '\0';
+         }
+
+        memcpy ( ASS_CARD._BUFCARD.OPERAC, "STH", 3 );
+        strcpy ( ASS_CARD._BUFCARD.OPERAND, RESULT_REG );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, "," );
+        strcat ( ASS_CARD._BUFCARD.OPERAND, FORMT [0] );
+        ...
+       }
+\end{lstlisting}
+\textbf{Пояснение.} После цепочки сравнения метка \texttt{@SAVE} должна попасть на
+карточку \texttt{STH}, иначе порядок меток в листинге нарушается.
+
+\subsection{\texttt{OPR2()} и \texttt{OEN2()}}
+
+\texttt{OPR2()} формирует \texttt{START}, \texttt{BALR}, \texttt{USING} с префиксом
+\texttt{@} у регистров. \texttt{OEN2()} выводит переменные \texttt{SYM[]}, записи
+\texttt{EXTRA[]}, при необходимости \texttt{DS 0F}, \texttt{@BUF}, директивы
+\texttt{EQU} и \texttt{END}; логика соответствует эталону на
+рис.~\ref{fig:etalon} (подробные \texttt{DC}/\texttt{DS} опущены в листинге для
+компактности — см.\ исходный текст \fpath{komppl.c}, функция \texttt{OEN2}).
 
 % ============================================================
-% РАЗДЕЛ 5. РЕЗУЛЬТАТЫ ЭКСПЕРИМЕНТАЛЬНОЙ ПРОВЕРКИ
+% РАЗДЕЛ 5
 % ============================================================
 \section{Результаты экспериментальной проверки модифицированного компилятора с ЯВУ}
 
-Работоспособность подтверждается сборкой в среде Linux (\texttt{gcc~-m32}): см.\
-\fpath{README.md} и \fpath{Makefile} в каталоге \fpath{lab-step-1-1}. Рекомендуемый
-запуск --- из Docker-образа по \fpath{Dockerfile} в корне репозитория (монтирование
-каталога \fpath{lab-step-1-1} в \texttt{/lab}).
+Проверка выполнялась на контрольных программах с расширенным синтаксисом
+объявлений и выражений. Для персонального варианта сгенерированный фрагмент
+ассемблерного листинга совпадает с эталоном (рис.~\ref{fig:etalon}).
 
-\begin{lstlisting}[style=Cstyle,basicstyle=\small\ttfamily,caption={Сборка и проверка в каталоге \fpath{lab-step-1-1}},label=lst:build4]
-make
-make check
-\end{lstlisting}
-
-Цель \texttt{make check} запускает \texttt{build/komppl.exe} для файлов
-\fpath{input/ex11.pli} и \fpath{input/examppl.pli}. Ассемблерный текст записывается
-рядом с исходником: \fpath{input/ex11.ass}, \fpath{input/examppl.ass}. Сравнение
-выполняется с эталонами \fpath{report/5/etalon/ex11.ass} и
-\fpath{report/5/etalon/examppl.ass}. Эталонный листинг для \texttt{ex11} --- на
-рис.~\ref{fig:etalon}; цель \texttt{make check} подтверждает побайтовое совпадение
-\fpath{input/ex11.ass} с \fpath{report/5/etalon/ex11.ass}.
-
-\subsection*{Пояснения к сгенерированному тексту}
-
-\textbf{Семантика \fpath{input/ex11.pli}} (рис.~\ref{fig:variant_mod}): по объявлениям
-\texttt{INIT ( 11B )} значения \texttt{A} и \texttt{B} равны~3 (\texttt{B} хранится
-как \texttt{DEC FIXED}); после \texttt{C = B * 5;} имеем \texttt{C = 15}; оператор
-\texttt{C = A = C;} сравнивает \texttt{A}=3 и \texttt{C}=15, результат сравнения
-«ложь», в~\texttt{C} записывается~0.
-
-\textbf{Оператор \texttt{C = B * 5;}} формируется цепочкой \texttt{ZAP}/\texttt{MP}/\texttt{CVB}/\texttt{STH} (\texttt{AVI2()}).
-
-\textbf{Оператор \texttt{C = A = C;}} в терминах разд.~3 соответствует паре
-\texttt{<OPL>}/\texttt{<AVL>}. В \fpath{src/komppl.c} сравнение выполняет
-\texttt{avl2\_emit\_compare\_rhs()}, запись результата в~\texttt{C} --- \texttt{OPA2()}
-(семантика \texttt{OPA}, а не отдельной \texttt{OPL2}).
+Семантика тестовой программы подтверждается по порождаемому коду: константа
+\texttt{11B} задаёт значение~3; присваивание \texttt{C = B * 5} использует
+упакованное представление \texttt{B}, промежуточный буфер и умножение с
+последующим приведением к целому; цепочка \texttt{C = A = C} реализует сравнение
+\texttt{A} и~\texttt{C} с записью булева результата в~\texttt{C}.
 
 % ============================================================
-% РАЗДЕЛ 6. ВЫВОДЫ
+% РАЗДЕЛ 6
 % ============================================================
 \section{Выводы по результатам работы}
 
-Порученное задание на модификацию макета компилятора с~ЯВУ под персональный вариант~№~11 может быть выполнено при соблюдении
-уточнённой грамматики (разд.~3): введение нетерминалов \texttt{<LID>}, \texttt{<ZNL>}, \texttt{<AVL>}, \texttt{<OPL>} позволяет
-формально разделить арифметику и логическое сравнение и согласовать описание с программой рис.~\ref{fig:variant_mod}.
-
 \begin{enumerate}
-  \item Модифицирована БД лексического анализатора: в число разделителей термов включён символ «\texttt{*}».
+  \item Выполнена модификация БД лексического анализатора: в число разделителей
+        термов включён символ «\texttt{*}».
 
-  \item Модифицирована БД синтаксического анализатора: расширена \texttt{SINT[]} (в т.\,ч.\ \texttt{DEC FIXED}, «\texttt{*}», «\texttt{=}»,
-        \texttt{RZR}); обновлены \texttt{VXOD[]} и \texttt{TPR[][]}.
+  \item Расширена таблица \texttt{SINT[]} (вместе с ростом \texttt{NSINT} до~310),
+        обновлены \texttt{VXOD[]} и \texttt{TPR[][]} для поддержки «\texttt{*}»,
+        «\texttt{=}» в нужном контексте и новых путей \texttt{DCL}.
 
-  \item Модифицирована семантическая библиотека: \texttt{ODC1()}, \texttt{AVI2()} с \texttt{avl2\_emit\_compare\_rhs()}, \texttt{OPA2()},
-        \texttt{OEN2()}, \texttt{OPR2()}, вспомогательные \texttt{SETCOMM()}, \texttt{const\_label()}.
+  \item Доработаны семантические подпрограммы и вспомогательные функции
+        (\texttt{ODC1()}, \texttt{AVI2()}, \texttt{avl2\_emit\_compare\_rhs()},
+        \texttt{OPA2()}, \texttt{OEN2()}, \texttt{OPR2()}, \texttt{VALUE()},
+        \texttt{SETCOMM()}, \texttt{const\_label()}), добавлены глобальные
+        структуры для констант и передачи результатов выражения.
 
-  \item Проверка \texttt{make check} в каталоге \fpath{lab-step-1-1} подтверждает совпадение
-        \fpath{input/ex11.ass} и \fpath{input/examppl.ass} с файлами в \fpath{report/5/etalon/};
-        для персонального варианта листинг совпадает с рис.~\ref{fig:etalon}.
+  \item Для контрольных примеров сгенерированный ассемблерный текст совпадает с
+        эталонным листингом, что подтверждает корректность цепочки «лексика —
+        синтаксис — семантика — генерация».
 \end{enumerate}
 
-Архитектура макета (табличный синтаксис и набор семантических подпрограмм) сохраняет локальный характер изменений при добавлении
-логического уровня (\texttt{AVL}/\texttt{OPL}) поверх существующей схемы обработки \texttt{BIN}/\texttt{DEC FIXED}.
+Табличное задание синтаксиса и модульность семантических подпрограмм макета
+позволили локализовать изменения в основном модуле транслятора при сохранении
+общей архитектуры компилятора.
 
 \end{document}

@@ -1,9 +1,19 @@
-\babel@toc {russian}{}\relax 
+\xpg@aux {}{russian}
 \contentsline {section}{\numberline {1}Задание на курсовую работу}{3}{section.1}%
 \contentsline {section}{\numberline {2}Постановка задачи модификации макета в части компилятора с ЯВУ}{6}{section.2}%
-\contentsline {section}{\numberline {3}Модификация состава и структуры БД макета компилятора с ЯВУ}{8}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Модификация БД лексического анализатора}{8}{subsection.3.1}%
+\contentsline {section}{\numberline {3}Модификация состава и структуры БД макета компилятора с ЯВУ}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Модификация БД лексического анализатора}{7}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Модификация БД синтаксического анализатора}{9}{subsection.3.2}%
-\contentsline {section}{\numberline {4}Модификация алгоритма макета компилятора с ЯВУ}{13}{section.4}%
-\contentsline {section}{\numberline {5}Результаты экспериментальной проверки модифицированного компилятора с ЯВУ}{14}{section.5}%
-\contentsline {section}{\numberline {6}Выводы по результатам работы}{15}{section.6}%
+\contentsline {section}{\numberline {4}Модификация алгоритма макета компилятора с ЯВУ}{18}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Синтаксический анализ: \texttt {sint\_ANAL()}}{18}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Глобальные данные генерации кода}{19}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}\texttt {SETCOMM()} — поле комментария карточки}{20}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}\texttt {const\_label()} — символические имена констант}{20}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}\texttt {VALUE()} — двоичные и десятичные инициализаторы}{21}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}\texttt {FORM()} — разделитель «\texttt {*}»}{22}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Первый проход: \texttt {ODC1()}}{22}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}Второй проход: \texttt {AVI2()} и \texttt {avl2\_emit\_compare\_rhs()}}{23}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}\texttt {OPA2()} — запись результата и отложенная метка}{24}{subsection.4.9}%
+\contentsline {subsection}{\numberline {4.10}\texttt {OPR2()} и \texttt {OEN2()}}{25}{subsection.4.10}%
+\contentsline {section}{\numberline {5}Результаты экспериментальной проверки модифицированного компилятора с ЯВУ}{25}{section.5}%
+\contentsline {section}{\numberline {6}Выводы по результатам работы}{25}{section.6}%

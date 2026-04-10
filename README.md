@@ -53,7 +53,7 @@ docker build -t lab32 .
 ## 2. Запуск контейнера
 ```bash
 docker run -it --rm \
-  -v "$PWD"/src:/lab \
+  -v "$PWD":/lab:z \
   -w /lab \
   lab32
 ```

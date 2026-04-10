@@ -1,0 +1,65 @@
+#! /bin/bash
+CLEAR_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$CLEAR_ROOT"
+
+INPUT_PLI=$(find input -maxdepth 1 -type f -name '*.pli' 2>/dev/null | LC_ALL=C sort | head -1)
+if [ -z "$INPUT_PLI" ]; then
+  echo "Нет файлов .pli в каталоге input/"
+  exit 1
+fi
+
+BASE=$(basename "$INPUT_PLI" .pli)
+mkdir -p output
+cp -f "$INPUT_PLI" "output/${BASE}.pli"
+
+echo
+echo
+echo
+echo "______________S T A R T   J O B_____________________"
+echo "(исходник: ${INPUT_PLI} -> output/${BASE}.*)"
+echo
+echo
+echo ' PL/1  ----->  Asswmbler    c o m p i l i n g'
+echo "continue?(y/n)"
+read OTV
+if [ "$OTV" = "y" ]
+then
+ echo
+ ./build/komppl.exe "output/${BASE}.pli"
+else
+ echo
+ exit
+fi
+echo
+echo
+echo
+echo ' Assembler  ----->  Object image   c o m p i l i n g'
+echo "continue?(y/n)"
+read OTV
+if [ "$OTV" = "y" ]
+then
+ echo
+ ./build/kompassr.exe "output/${BASE}.ass"
+else
+ echo
+ exit
+fi
+echo
+echo
+echo
+echo ' Load, run and debug Object image  '
+printf '%s\n' "output/${BASE}.tex" > output/spis.mod
+echo "continue?(y/n)"
+read OTV
+if [ "$OTV" = "y" ]
+then
+ echo
+ ./build/absloadm.exe output/spis.mod
+else
+ echo
+ exit
+fi
+echo
+echo
+echo
+echo "______________F I N I S H     J O B__________________"

@@ -1,0 +1,8 @@
+\xpginauxfiletrue 
+\selectlanguage *{russian}
+\contentsline {section}{\numberline {1}Задание на курсовую работу}{3}{section.1}%
+\contentsline {section}{\numberline {2}Постановка задачи модификации макета в части компилятора с ЯВУ}{6}{section.2}%
+\contentsline {section}{\numberline {3}Модификация состава и структуры БД макета компилятора с ЯВУ}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Модификация БД лексического анализатора}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Модификация БД синтаксического анализатора}{9}{subsection.3.2}%
+\xpginauxfilefalse 

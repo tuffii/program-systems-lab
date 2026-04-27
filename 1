@@ -300,3 +300,165 @@ int (* FUN [NNETRM][2]) () =                    /*with following fields:  */
 
 после правок проведи анализ полученного результата таким образом что бы для ex11.pli полученный ass файл полностью соотвествовал тому который получается в результате lab-step-1-1 (в его output папке корректный вывод)
 тестирование проводи с помошью docker образа как это описано в readme
+
+
+
+протестируй что все ветви и нетерминалы соотвествуют требованиям представленным ниже по документации:
+
+    1. ⟨PRO⟩ ::= ⟨OPR⟩⟨TEL⟩⟨OEN⟩
+    2. ⟨OPR⟩ ::= ⟨IPR⟩:PROC_OPTIONS(MAIN);
+    3. ⟨IPR⟩ ::= ⟨IDE⟩
+    4. ⟨IDE⟩ ::= ⟨BUK⟩ | ⟨IDE⟩⟨BUK⟩ | ⟨IDE⟩⟨CIF⟩
+    5. ⟨BUK⟩ ::= A | B | C | D | E | M | P | X
+    6. ⟨CIF⟩ ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+    7. ⟨TEL⟩ ::= ⟨ODC⟩ | ⟨TEL⟩⟨ODC⟩ | ⟨TEL⟩⟨OPA⟩ | ⟨TEL⟩⟨OPL⟩
+    8. ⟨ODC⟩ ::= DCL_⟨IPE⟩_BIN_FIXED(⟨RZR⟩);
+    9. | DCL_⟨IPE⟩_BIN_FIXED(⟨RZR⟩)INIT(⟨LIT⟩);
+	| DCL_⟨IPE⟩_BIN_FIXED;
+	| DCL_⟨IPE⟩_BIN_FIXED_INIT(⟨LID⟩);
+	| DCL_⟨IPE⟩_DEC_FIXED_INIT(⟨LID⟩);
+    10. ⟨IPE⟩ ::= ⟨IDE⟩
+    11. ⟨RZR⟩ ::= ⟨CIF⟩ | ⟨RZR⟩⟨CIF⟩
+    12. ⟨LIT⟩ ::= ⟨MAN⟩B
+    13. ⟨MAN⟩ ::= 1 | ⟨MAN⟩0 | ⟨MAN⟩1
+    14. ⟨LID⟩ ::= ⟨CIF⟩ | ⟨LID⟩⟨CIF⟩
+    15. ⟨OPA⟩ ::= ⟨IPE⟩=⟨AVI⟩;
+    16. ⟨AVI⟩ ::= ⟨LIT⟩ | ⟨LID⟩ | ⟨IPE⟩| ⟨AVI⟩⟨ZNK⟩⟨LIT⟩ | ⟨AVI⟩⟨ZNK⟩⟨LID⟩ | ⟨AVI⟩⟨ZNK⟩⟨IPE⟩
+    17. ⟨AVL⟩ ::= ⟨AVI⟩⟨ZNL⟩⟨LIT⟩ | ⟨AVI⟩⟨ZNL⟩⟨LID⟩ | ⟨AVI⟩⟨ZNL⟩⟨IPE⟩
+    18. ⟨OPL⟩ ::= ⟨IPE⟩=⟨AVL⟩;
+    19. ⟨ZNK⟩ ::= + | - | *
+    20. ⟨ZNL⟩ ::= =
+    21. ⟨OEN⟩ ::= END_⟨IPR⟩
+
+предукции:
+
+    1. <OPR><TEL><OEN> ──> <PRO>
+    2. <IPR>:PROC_OPTIONS(MAIN); ──> <OPR>
+    3. <IDE> ──> <IPR>
+    4. <BUK> ──> <IDE>
+    5. <IDE><BUK> ──> <IDE>
+    6. <IDE><CIF> ──> <IDE>
+    7. A ──> <BUK>
+    8. B ──> <BUK>
+    9. C ──> <BUK>
+    10. D ──> <BUK>
+    11. E ──> <BUK>
+    12. M ──> <BUK>
+    13. P ──> <BUK>
+    14. X ──> <BUK>
+    15. 0 ──> <CIF>
+    16. 1 ──> <CIF>
+    17. 2 ──> <CIF>
+    18. 3 ──> <CIF>
+    19. 4 ──> <CIF>
+    20. 5 ──> <CIF>
+    21. 6 ──> <CIF>
+    22. 7 ──> <CIF>
+    23. 8 ──> <CIF>
+    24. 9 ──> <CIF>
+    25. <ODC> ──> <TEL>
+    26. <TEL><ODC> ──> <TEL>
+    27. <TEL><OPA> ──> <TEL>
+    28. <TEL><OPL> ──> <TEL>
+    29. DCL_<IPE>_BIN_FIXED(<RZR>); ──> <ODC>
+    30. DCL_<IPE>_BIN_FIXED(<RZR>)INIT(<LIT>); ──> <ODC>
+    31. DCL_<IPE>_BIN_FIXED; ──> <ODC>
+    32. DCL_<IPE>_BIN_FIXED_INIT(<LID>); ──> <ODC>
+    33. DCL_<IPE>_DEC_FIXED_INIT(<LID>); ──> <ODC>
+    34. <IDE> ──> <IPE>
+    35. <CIF> ──> <RZR>
+    36. <RZR><CIF> ──> <RZR>
+    37. <MAN>B ──> <LIT>
+    38. 1 ──> <MAN>
+    39. <MAN>0 ──> <MAN>
+    40. <MAN>1 ──> <MAN>
+    41. <CIF> ──> <LID>
+    42. <LID><CIF> ──> <LID>
+    43. <IPE>=<AVI>; ──> <OPA>
+    44. <LIT> ──> <AVI>
+    45. <LID> ──> <AVI>
+    46. <IPE> ──> <AVI>
+    47. <AVI><ZNK><LIT> ──> <AVI>
+    48. <AVI><ZNK><LID> ──> <AVI>
+    49. <AVI><ZNK><IPE> ──> <AVI>
+    50. <AVI><ZNL><LIT> ──> <AVL>
+    51. <AVI><ZNL><LID> ──> <AVL>
+    52. <AVI><ZNL><IPE> ──> <AVL>
+    53. <IPE>=<AVL>; ──> <OPL>
+    54. + ──> <ZNK>
+    55. - ──> <ZNK>
+    56. * ──> <ZNK>
+    57. = ──> <ZNL>
+    58. END_<IPR> ──> <OEN>
+
+1. Куст идентификаторов и букв:
+    • A, B, C, D, E, M, P, X ──> <BUK>
+    • <BUK> ──> <IDE>
+    • <IDE>
+        ◦ <BUK> ──> <IDE>
+        ◦ <CIF> ──> <IDE>
+    • <IDE> ──> <IPE>
+    • <IDE> ──> <IPR>
+2. Куст чисел и литералов:
+    • 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ──> <CIF>
+    • 1 ──> <MAN>
+    • <MAN>
+        ◦ B ──> <LIT>
+        ◦ 0 ──> <MAN>
+        ◦ 1 ──> <MAN>
+    • <CIF>
+        ◦ ──> <RZR>
+        ◦ ──> <LID>
+    • <RZR><CIF> ──> <RZR>
+    • <LID><CIF> ──> <LID>
+3. Куст оператора объявления (DCL):
+    • DCL_ <IPE>_
+        ◦ BIN_FIXED
+            ▪ ( <RZR> )
+                • ; ──> <ODC>
+                • INIT( <LIT> ); ──> <ODC>
+            ▪ ; ──> <ODC>
+            ▪ _INIT( <LID> ); ──> <ODC>
+        ◦ DEC_FIXED_INIT( <LID> ); ──> <ODC>
+4. Куст выражений (арифметических и логических):
+    • <LIT> ──> <AVI>
+    • <LID> ──> <AVI>
+    • <IPE> ──> <AVI>
+    • <AVI>
+        ◦ <ZNK>
+            ▪ <LIT> ──> <AVI>
+            ▪ <LID> ──> <AVI>
+            ▪ <IPE> ──> <AVI>
+        ◦ <ZNL>
+            ▪ <LIT> ──> <AVL>
+            ▪ <LID> ──> <AVL>
+            ▪ <IPE> ──> <AVL>
+5. Куст операторов присваивания:
+    • <IPE>=
+        ◦ <AVI>; ──> <OPA>
+        ◦ <AVL>; ──> <OPL>
+6. Куст знаков и разделителей:
+    • +, -, * ──> <ZNK>
+    • = ──> <ZNL>
+7. Куст структуры программы (Тело):
+    • <ODC> ──> <TEL>
+    • <TEL>
+        ◦ <ODC> ──> <TEL>
+        ◦ <OPA> ──> <TEL>
+        ◦ <OPL> ──> <TEL>
+8. Куст корня программы:
+    • <IPR>:PROC_OPTIONS(MAIN); ──> <OPR>
+    • <OPR><TEL><OEN> ──> <PRO>
+    • END_<IPR> ──> <OEN>
+
+
+твоя задача провести сравнение версии lab-step-1 и полученной в lab-step-2 версии kompll.c
+можешь еспользовать для этого tmp файлы и git (установлен в системе)
+проверить что полученная тобой версия полностью соотвествует предоставленной выше документации
+ВАЖНО! если ты уверен что какое то твое решение корректное и оно не соотвествует тому что описано в предоставленной документации - напиши это
+
+и тебе нужно составить отчет в каталоге lab-step-2/report в формате md в котором опиши все сделанные модификации относительно lab-step-1
+выпиши все новые созданные методы и части кода в которых проведены правки с комментариями к ним
+
+подписывай какой части документации это соотвествует
+

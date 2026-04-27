@@ -17,3 +17,11 @@ $(OUTDIR)/absloadm.exe: $(SRCDIR)/absloadm.c | $(OUTDIR)
 
 clean:
 	rm -rf $(OUTDIR)
+
+.PHONY: check
+check: $(OUTDIR)/komppl.exe
+	./$(OUTDIR)/komppl.exe input/ex11.pli
+	./$(OUTDIR)/komppl.exe input/examppl.pli
+	cmp input/ex11.ass report/5/etalon/ex11.ass
+	cmp input/examppl.ass report/5/etalon/examppl.ass
+	@echo "check: OK (ex11 + examppl match report/5/etalon/*.ass)"

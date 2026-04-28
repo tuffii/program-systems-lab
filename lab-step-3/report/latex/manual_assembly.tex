@@ -1,0 +1,63 @@
+\documentclass[10pt, a4paper, landscape]{article}
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\usepackage[margin=1cm]{geometry}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\begin{document}
+
+\section*{Ручное ассемблирование эквивалента личного задания (Вариант 11)}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{longtable}{|c|l|l|l|c|l|l|c|l|l|}
+\hline
+\multirow{2}{*}{№ строки} & \multicolumn{3}{c|}{Исходный текст} & \multicolumn{3}{c|}{Результат первого просмотра} & \multicolumn{3}{c|}{Результат второго просмотра} \\
+\cline{2-10}
+& метка & КОП & операнды & Отн. адр. & КОП & операнды & Отн. адр. & КОП & операнды \\
+\hline
+\endfirsthead
+\hline
+\multirow{2}{*}{№ строки} & \multicolumn{3}{c|}{Исходный текст} & \multicolumn{3}{c|}{Результат первого просмотра} & \multicolumn{3}{c|}{Результат второго просмотра} \\
+\cline{2-10}
+& метка & КОП & операнды & Отн. адр. & КОП & операнды & Отн. адр. & КОП & операнды \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+1 & EX11 & START & 0 & 0 & & & 0 & & \\ \hline
+2 & & BALR & @RBASE,0 & 0 & BALR' & ?,0 & 0 & BALR' & 5,0 \\ \hline
+3 & & USING & *,@RBASE & 2 & & & 2 & & \\ \hline
+4 & & ZAP & @BUF(8),B(3) & 2 & ZAP' & ?(8,?),?(3,?) & 2 & ZAP' & 62(8,5),52(3,5) \\ \hline
+5 & & MP & @BUF(8),@FIVE(1) & 8 & MP' & ?(8,?),?(1,?) & 8 & MP' & 62(8,5),58(1,5) \\ \hline
+6 & & CVB & @R1,@BUF & 14 & CVB' & ?,?(0,?) & 14 & CVB' & 6,62(0,5) \\ \hline
+7 & & STH & @R1,C & 18 & STH' & ?,?(0,?) & 18 & STH' & 6,56(0,5) \\ \hline
+8 & & LH & @R2,A & 22 & LH' & ?,?(0,?) & 22 & LH' & 2,50(0,5) \\ \hline
+9 & & CH & @R2,C & 26 & CH' & ?,?(0,?) & 26 & CH' & 2,56(0,5) \\ \hline
+10 & & BC & 8,@TRUE & 30 & BC' & 8,?(0,?) & 30 & BC' & 8,40(0,5) \\ \hline
+11 & & LA & @R3,0 & 34 & LA' & ?,0(0,0) & 34 & LA' & 3,0(0,0) \\ \hline
+12 & & B & @SAVE & 38 & B' & ?(0,?) & 38 & B' & 44(0,5) \\ \hline
+13 & @TRUE & LA & @R3,1 & 42 & LA' & ?,1(0,0) & 42 & LA' & 3,1(0,0) \\ \hline
+14 & @SAVE & STH & @R3,C & 46 & STH' & ?,?(0,?) & 46 & STH' & 3,56(0,5) \\ \hline
+15 & & BCR & 15,@RVIX & 50 & BCR' & 15,? & 50 & BCR' & 15,14 \\ \hline
+16 & A & DC & H'3' & 52 & & Память для A=3 & 52 & & Память для A=3 \\ \hline
+17 & B & DC & PL3'3' & 54 & & Память для B=3 & 54 & & Память для B=3 \\ \hline
+18 & C & DS & H & 58 & & Память для C & 58 & & Память для C \\ \hline
+19 & @FIVE & DC & PL1'5' & 60 & & Память для @FIVE=5 & 60 & & Память для @FIVE=5 \\ \hline
+20 & & DS & 0F & 64 & & Выравнивание & 64 & & Выравнивание \\ \hline
+21 & @BUF & DC & PL8'0' & 64 & & Память для @BUF=0 & 64 & & Память для @BUF=0 \\ \hline
+22 & @RBASE & EQU & 5 & 5 & & & 5 & & \\ \hline
+23 & @R1 & EQU & 6 & 6 & & & 6 & & \\ \hline
+24 & @R2 & EQU & 2 & 2 & & & 2 & & \\ \hline
+25 & @R3 & EQU & 3 & 3 & & & 3 & & \\ \hline
+26 & @RVIX & EQU & 14 & 14 & & & 14 & & \\ \hline
+27 & & END & & 72 & & & 72 & & \\ \hline
+\end{longtable}
+
+\end{document}

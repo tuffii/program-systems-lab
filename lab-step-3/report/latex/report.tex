@@ -1,0 +1,290 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\setmonofont{Liberation Mono}[Scale=0.9]
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\usepackage[margin=2cm]{geometry}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{pdflscape}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{setspace}
+
+\setstretch{1.15}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    tabsize=4,
+    showstringspaces=false,
+    extendedchars=true
+}
+
+\begin{document}
+
+% Титульный лист
+\begin{titlepage}
+    \begin{center}
+        \small
+        Министерство науки и высшего образования Российской Федерации\\
+        Санкт-Петербургский политехнический университет Петра Великого\\
+        Институт компьютерных наук и кибербезопасности\\
+        Высшая школа программной инженерии\\[3cm]
+        
+        \Large
+        \textbf{КУРСОВАЯ РАБОТА}\\[0.5cm]
+        \large
+        Разработка учебной системы программирования\\[0.2cm]
+        \textbf{Компилятор с Ассемблера}\\[1cm]
+        
+        \normalsize
+        Дисциплина: «Системы программирования»\\[0.5cm]
+        Вариант № 11\\[3cm]
+    \end{center}
+    
+    \begin{flushright}
+        \normalsize
+        \textbf{Исполнители:}\\
+        Студенты группы 5140904/50102\\
+        Сырбу Г. В.\\
+        Федерова С. К.\\[1cm]
+        
+        \textbf{Руководитель:}\\
+        Расторгуев В. Я.
+    \end{flushright}
+    
+    \vfill
+    
+    \begin{center}
+        \normalsize
+        Санкт-Петербург\\
+        2026
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Описание примера из личного задания}
+
+\textbf{Формулировка личного задания:}\\
+Необходимо выполнить доработку элементов макета учебной системы программирования до уровня, позволяющего обрабатывать «новые» для макета конструкции языка высокого уровня, примененные в варианте № 11.
+
+\subsection{Исходный текст на ЯВУ (вариант № 11)}
+\begin{lstlisting}[language=PL/I]
+EX11: PROC OPTIONS ( MAIN );
+DCL A BIN FIXED INIT ( 3 );
+DCL B DEC FIXED INIT ( 3 );
+DCL C BIN FIXED;
+C = B * 5;
+C = A = C;
+END EX11;
+\end{lstlisting}
+
+\subsection{Ассемблеровский эквивалент контрольного примера}
+Файл \texttt{examppl.ass}, на который изначально настроена программа-макет:
+\begin{lstlisting}
+EXAMP    START 0            Start of program
+         BALR  RBASE,0      Load base register
+         USING *,RBASE      Set register as base
+         L     RRAB,A       Load variable to register
+         A     RRAB,B       Form intermediate value
+         S     RRAB,C       Form intermediate value
+         ST    RRAB,D       Form arithmetic expression value
+         BCR   15,14        Exit from program
+A        DC    F'3'         Variable definition
+B        DC    F'4'         Variable definition
+C        DC    F'5'         Variable definition
+D        DC    F'0'         Variable definition
+RBASE    EQU   15
+RRAB     EQU   5
+         END    EXAMP       End of program
+\end{lstlisting}
+
+\subsection{Ассемблеровский эквивалент личного задания}
+Файл \texttt{ex11.ass}, сгенерированный компилятором с ЯВУ на предыдущем этапе:
+\begin{lstlisting}
+EX11     START 0                Init rel addr=0
+         BALR  @RBASE,0         Set @RBASE=cur PC
+         USING *,@RBASE         Use @RBASE for addr
+         ZAP   @BUF(8),B(3)     Copy pdec B->BUF
+         MP    @BUF(8),@FIVE(1) Mul BUF by 5->BUF
+         CVB   @R1,@BUF         pdec BUF ->int @R1
+         STH   @R1,C            Store int ->C
+         LH    @R2,A            Load A ->@R2
+         CH    @R2,C            Compare @R2 with C
+         BC    8,@TRUE          Branch if equal
+         LA    @R3,0            Set @R3=0 (F)
+         B     @SAVE            Jump to save
+@TRUE    LA    @R3,1            Set @R3=1 (T)
+@SAVE    STH   @R3,C            Store bool ->C
+         BCR   15,@RVIX         Return to caller
+A        DC    H'3'             Store halfword init
+B        DC    PL3'3'           Store pdec init
+C        DS    H                Reserve halfword
+@FIVE    DC    PL1'5'           Store packed const
+         DS    0F               Align next item
+@BUF     DC    PL8'0'           Clear packed BUF
+@RBASE   EQU   5                Set @RBASE=5
+@R1      EQU   6                Set @R1=6
+@R2      EQU   2                Set @R2=2
+@R3      EQU   3                Set @R3=3
+@RVIX    EQU   14               Set @RVIX=14
+         END                    Program ends
+\end{lstlisting}
+
+\subsection{Множество новых языковых конструкций}
+При сравнении \texttt{examppl.ass} и \texttt{ex11.ass} выявлены следующие новые языковые конструкции, отсутствующие в макете:
+\begin{itemize}
+    \item \textbf{Машинные команды формата RX:} \texttt{CVB}, \texttt{STH}, \texttt{LH}, \texttt{CH}, \texttt{BC}, \texttt{LA}, \texttt{B} (расширенная мнемоника для безусловного перехода).
+    \item \textbf{Машинные команды формата SS:} \texttt{ZAP}, \texttt{MP}. Формат SS ранее в макете не поддерживался.
+    \item \textbf{Псевдооперации и новые типы данных:}
+    \begin{itemize}
+        \item \texttt{H} (Halfword) для \texttt{DC} и \texttt{DS} (требует выравнивания на границу 2 байт).
+        \item \texttt{PLn} (Packed Decimal) для \texttt{DC} с указанием длины (например, \texttt{PL3}, \texttt{PL1}, \texttt{PL8}).
+        \item \texttt{0F} для выравнивания в \texttt{DS} (выравнивание на границу полного слова, 4 байта, без выделения памяти).
+    \end{itemize}
+\end{itemize}
+
+\section{Постановка задачи модификации программы-макета}
+
+Для обеспечения компиляции ассемблеровского эквивалента примера из личного задания необходимо модифицировать программу-макет компилятора с АССЕМБЛЕРА. Выбранный способ модификации:
+\begin{enumerate}
+    \item \textbf{Расширение таблицы машинных операций (TMOP):} добавление записей для новых машинных команд с указанием их мнемоник, кодов операций (КОП), длин и форматов обработчиков (RX, SS).
+    \item \textbf{Доработка функциональных блоков обработки машинных команд:}
+    \begin{itemize}
+        \item Добавление поддержки команд формата SS. Потребуется создать новые функции обработки (\texttt{FSS} и \texttt{SSS}), которые будут парсить операнды с указанием длины \texttt{D1(L1,B1), D2(L2,B2)}.
+        \item Расширение блока обработки команд типа RX для поддержки мнемоники \texttt{B} (транслируется как \texttt{BC 15,}).
+    \end{itemize}
+    \item \textbf{Доработка функциональных блоков обработки псевдоопераций:}
+    \begin{itemize}
+        \item Модификация обработчиков \texttt{DC} и \texttt{DS} для поддержки типов данных \texttt{H} (Halfword) и \texttt{P} (Packed Decimal).
+        \item Реализация логики выравнивания счетчика адреса (\texttt{CHADR}) на границы полуслова и полного слова.
+    \end{itemize}
+\end{enumerate}
+
+\begin{landscape}
+\subsection*{Ручное ассемблирование эквивалента личного задания}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{longtable}{|c|l|l|l|c|l|l|c|l|l|}
+\hline
+\multirow{2}{*}{№ строки} & \multicolumn{3}{c|}{Исходный текст} & \multicolumn{3}{c|}{Результат первого просмотра} & \multicolumn{3}{c|}{Результат второго просмотра} \\
+\cline{2-10}
+& метка & КОП & операнды & Отн. адр. & КОП & операнды & Отн. адр. & КОП & операнды \\
+\hline
+\endfirsthead
+\hline
+\multirow{2}{*}{№ строки} & \multicolumn{3}{c|}{Исходный текст} & \multicolumn{3}{c|}{Результат первого просмотра} & \multicolumn{3}{c|}{Результат второго просмотра} \\
+\cline{2-10}
+& метка & КОП & операнды & Отн. адр. & КОП & операнды & Отн. адр. & КОП & операнды \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\endlastfoot
+
+1 & EX11 & START & 0 & 0 & & & 0 & & \\ \hline
+2 & & BALR & @RBASE,0 & 0 & BALR' & ?,0 & 0 & BALR' & 5,0 \\ \hline
+3 & & USING & *,@RBASE & 2 & & & 2 & & \\ \hline
+4 & & ZAP & @BUF(8),B(3) & 2 & ZAP' & ?(8,?),?(3,?) & 2 & ZAP' & 62(8,5),52(3,5) \\ \hline
+5 & & MP & @BUF(8),@FIVE(1) & 8 & MP' & ?(8,?),?(1,?) & 8 & MP' & 62(8,5),58(1,5) \\ \hline
+6 & & CVB & @R1,@BUF & 14 & CVB' & ?,?(0,?) & 14 & CVB' & 6,62(0,5) \\ \hline
+7 & & STH & @R1,C & 18 & STH' & ?,?(0,?) & 18 & STH' & 6,56(0,5) \\ \hline
+8 & & LH & @R2,A & 22 & LH' & ?,?(0,?) & 22 & LH' & 2,50(0,5) \\ \hline
+9 & & CH & @R2,C & 26 & CH' & ?,?(0,?) & 26 & CH' & 2,56(0,5) \\ \hline
+10 & & BC & 8,@TRUE & 30 & BC' & 8,?(0,?) & 30 & BC' & 8,40(0,5) \\ \hline
+11 & & LA & @R3,0 & 34 & LA' & ?,0(0,0) & 34 & LA' & 3,0(0,0) \\ \hline
+12 & & B & @SAVE & 38 & B' & ?(0,?) & 38 & B' & 44(0,5) \\ \hline
+13 & @TRUE & LA & @R3,1 & 42 & LA' & ?,1(0,0) & 42 & LA' & 3,1(0,0) \\ \hline
+14 & @SAVE & STH & @R3,C & 46 & STH' & ?,?(0,?) & 46 & STH' & 3,56(0,5) \\ \hline
+15 & & BCR & 15,@RVIX & 50 & BCR' & 15,? & 50 & BCR' & 15,14 \\ \hline
+16 & A & DC & H'3' & 52 & & Память для A=3 & 52 & & Память для A=3 \\ \hline
+17 & B & DC & PL3'3' & 54 & & Память для B=3 & 54 & & Память для B=3 \\ \hline
+18 & C & DS & H & 58 & & Память для C & 58 & & Память для C \\ \hline
+19 & @FIVE & DC & PL1'5' & 60 & & Память для @FIVE=5 & 60 & & Память для @FIVE=5 \\ \hline
+20 & & DS & 0F & 64 & & Выравнивание & 64 & & Выравнивание \\ \hline
+21 & @BUF & DC & PL8'0' & 64 & & Память для @BUF=0 & 64 & & Память для @BUF=0 \\ \hline
+22 & @RBASE & EQU & 5 & 5 & & & 5 & & \\ \hline
+23 & @R1 & EQU & 6 & 6 & & & 6 & & \\ \hline
+24 & @R2 & EQU & 2 & 2 & & & 2 & & \\ \hline
+25 & @R3 & EQU & 3 & 3 & & & 3 & & \\ \hline
+26 & @RVIX & EQU & 14 & 14 & & & 14 & & \\ \hline
+27 & & END & & 72 & & & 72 & & \\ \hline
+\end{longtable}
+\normalsize
+\end{landscape}
+
+\section{Перечень и пояснения модификаций состава и структуры БД}
+
+В основу функционирования макета компилятора с Ассемблера положен алгоритм, использующий в своей работе базу данных (БД). Для поддержки новых конструкций вносятся следующие изменения:
+
+\subsection{Таблица машинных операций (TMOP)}
+В таблицу \texttt{TMOP} добавляются новые строки для поддержки команд форматов RX и SS. Таблица расширяется следующими записями:
+\begin{itemize}
+    \item \texttt{\{"CVB", 0x4F, 4, FRX, SRX\}}
+    \item \texttt{\{"STH", 0x40, 4, FRX, SRX\}}
+    \item \texttt{\{"LH",  0x48, 4, FRX, SRX\}}
+    \item \texttt{\{"CH",  0x49, 4, FRX, SRX\}}
+    \item \texttt{\{"BC",  0x47, 4, FRX, SRX\}}
+    \item \texttt{\{"LA",  0x41, 4, FRX, SRX\}}
+    \item \texttt{\{"B",   0x47, 4, FRX, SRX\}} (обрабатывается как RX, но с неявным первым операндом-маской 15)
+    \item \texttt{\{"ZAP", 0xF8, 6, FSS, SSS\}}
+    \item \texttt{\{"MP",  0xFC, 6, FSS, SSS\}}
+\end{itemize}
+
+\subsection{Таблица псевдоопераций (TPOP)}
+Состав команд в таблице \texttt{TPOP} остается без изменений (START, DC, DS, USING, EQU, END). Однако функции обработки \texttt{FDC/SDC} и \texttt{FDS/SDS} будут существенно расширены для поддержки новых типов данных и выравнивания.
+
+\section{Перечень и пояснения модификаций алгоритма}
+
+Для реализации поставленной задачи в алгоритм программы-макета вносятся следующие изменения:
+
+\subsection{Обработка команд формата SS}
+Создаются новые функции \texttt{FSS} и \texttt{SSS} для разбора операндов команд формата SS: \texttt{OP1(L1),OP2(L2)}.
+\begin{itemize}
+    \item На первом просмотре (\texttt{FSS}) счетчик адреса \texttt{CHADR} увеличивается на 6 байт.
+    \item На втором просмотре (\texttt{SSS}) алгоритм извлекает длины операндов, находит адреса имен в таблице символов \texttt{TSYM}, вычисляет смещения относительно базового регистра и формирует 6-байтовый машинный код (КОП + Длина1/Длина2 + База1/Смещение1 + База2/Смещение2).
+\end{itemize}
+
+\subsection{Модификация обработчиков псевдоопераций DC и DS}
+\begin{itemize}
+    \item \textbf{FDC / SDC:} Добавляется распознавание типа \texttt{H} (Halfword). Значение константы преобразуется в 2-байтовое двоичное представление. Добавляется распознавание типа \texttt{P} (Packed Decimal) с модификатором длины \texttt{L} (например, \texttt{PL3}). Значение константы переводится в упакованный десятичный формат (каждая цифра занимает полубайт, последний полубайт — знак) и занимает указанное количество байт.
+    \item \textbf{FDS / SDS:} Добавляется распознавание типа \texttt{H} (увеличение счетчика адреса на 2) и поддержка \texttt{0F} (выравнивание счетчика адреса на границу полного слова без выделения дополнительной памяти).
+\end{itemize}
+
+\subsection{Обработка команды B и выравнивание}
+\begin{itemize}
+    \item Команда \texttt{B} является расширенной мнемоникой для \texttt{BC 15,}. При обработке на втором просмотре алгоритм явно подставляет маску \texttt{15} в качестве первого операнда (регистра R1).
+    \item Реализуется корректное выравнивание (alignment) счетчика \texttt{CHADR} при встрече \texttt{DS H}, \texttt{DC H} (выравнивание на границу 2 байт) и \texttt{DS 0F} (выравнивание на границу 4 байт). Если текущий адрес не кратен требуемой границе, он увеличивается до ближайшего кратного значения.
+\end{itemize}
+
+\section{Выводы по результатам работы}
+
+В ходе выполнения работы был проведен анализ исходного ассемблеровского эквивалента контрольного примера и ассемблеровского эквивалента личного варианта № 11. Выполнено ручное ассемблирование программы, что позволило детально отследить изменения счетчика адреса, формирование смещений и базовых регистров.
+
+\textbf{Позитивные моменты:}
+\begin{itemize}
+    \item Структурированность программы-макета (наличие таблиц TMOP, TPOP и отдельных блоков обработки) позволяет легко расширять функционал компилятора.
+    \item Большинство новых команд (CVB, STH, LH, CH, BC, LA) относятся к уже поддерживаемому формату RX, что требует лишь добавления записей в таблицу TMOP.
+\end{itemize}
+
+\textbf{Негативные моменты/Сложности:}
+\begin{itemize}
+    \item Появление команд формата SS (ZAP, MP) требует разработки нового алгоритма разбора операндов с длинами, что усложняет лексический и синтаксический анализ строки ассемблера.
+    \item Реализация упаковки десятичных чисел (Packed Decimal) для псевдооперации \texttt{DC PLn} требует аккуратной работы с битовыми операциями и полубайтами.
+    \item Необходимость реализации логики автоматического выравнивания адресов для полуслов и полных слов.
+\end{itemize}
+
+\textbf{Общая оценка:}
+Поставленная задача декомпозирована, определены конкретные точки модификации БД и алгоритма компилятора. Спроектированный перечень модификаций является полным и достаточным для обеспечения успешной трансляции ассемблеровского эквивалента личного задания в объектный код.
+
+\end{document}

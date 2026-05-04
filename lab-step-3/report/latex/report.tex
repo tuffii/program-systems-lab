@@ -8,6 +8,7 @@
 \usepackage{multirow}
 \usepackage{longtable}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{listings}
 \usepackage{pdflscape}
 \usepackage{xcolor}
@@ -140,6 +141,50 @@ C        DS    H                Reserve halfword
          END                    Program ends
 \end{lstlisting}
 
+\subsection{Табличная запись исходного ассемблерного текста с адресами}
+В таблице приведен исходный ассемблеровский текст личного задания. В левом столбце указан относительный адрес размещения команды, области данных или псевдооперации в шестнадцатеричном формате.
+
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{longtable}{|c|l|l|l|l|}
+\hline
+\textbf{Адрес} & \textbf{Метка} & \textbf{КОП} & \textbf{Операнды} & \textbf{Пояснение} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Адрес} & \textbf{Метка} & \textbf{КОП} & \textbf{Операнды} & \textbf{Пояснение} \\
+\hline
+\endhead
+0x00 & EX11 & START & 0 & Init rel addr=0 \\ \hline
+0x00 & & BALR & @RBASE,0 & Set @RBASE=cur PC \\ \hline
+0x02 & & USING & *,@RBASE & Use @RBASE for addr \\ \hline
+0x02 & & ZAP & @BUF(8),B(3) & Copy pdec B->BUF \\ \hline
+0x08 & & MP & @BUF(8),@FIVE(1) & Mul BUF by 5->BUF \\ \hline
+0x0E & & CVB & @R1,@BUF & pdec BUF ->int @R1 \\ \hline
+0x12 & & STH & @R1,C & Store int ->C \\ \hline
+0x16 & & LH & @R2,A & Load A ->@R2 \\ \hline
+0x1A & & CH & @R2,C & Compare @R2 with C \\ \hline
+0x1E & & BC & 8,@TRUE & Branch if equal \\ \hline
+0x22 & & LA & @R3,0 & Set @R3=0 (F) \\ \hline
+0x26 & & B & @SAVE & Jump to save \\ \hline
+0x2A & @TRUE & LA & @R3,1 & Set @R3=1 (T) \\ \hline
+0x2E & @SAVE & STH & @R3,C & Store bool ->C \\ \hline
+0x32 & & BCR & 15,@RVIX & Return to caller \\ \hline
+0x34 & A & DC & H'3' & Store halfword init \\ \hline
+0x36 & B & DC & PL3'3' & Store pdec init \\ \hline
+0x3A & C & DS & H & Reserve halfword \\ \hline
+0x3C & @FIVE & DC & PL1'5' & Store packed const \\ \hline
+0x40 & & DS & 0F & Align next item \\ \hline
+0x40 & @BUF & DC & PL8'0' & Clear packed BUF \\ \hline
+0x48 & @RBASE & EQU & 5 & Set @RBASE=5 \\ \hline
+0x48 & @R1 & EQU & 6 & Set @R1=6 \\ \hline
+0x48 & @R2 & EQU & 2 & Set @R2=2 \\ \hline
+0x48 & @R3 & EQU & 3 & Set @R3=3 \\ \hline
+0x48 & @RVIX & EQU & 14 & Set @RVIX=14 \\ \hline
+0x48 & & END & & Program ends \\ \hline
+\end{longtable}
+\normalsize
+
 \subsection{Множество новых языковых конструкций}
 При сравнении \texttt{examppl.ass} и \texttt{ex11.ass} выявлены следующие новые языковые конструкции, отсутствующие в макете:
 \begin{itemize}
@@ -203,7 +248,7 @@ C        DS    H                Reserve halfword
 9 & & CH & @R2,C & 26 & CH' & ?,?(0,?) & 26 & CH' & 2,56(0,5) \\ \hline
 10 & & BC & 8,@TRUE & 30 & BC' & 8,?(0,?) & 30 & BC' & 8,40(0,5) \\ \hline
 11 & & LA & @R3,0 & 34 & LA' & ?,0(0,0) & 34 & LA' & 3,0(0,0) \\ \hline
-12 & & B & @SAVE & 38 & B' & ?(0,?) & 38 & B' & 44(0,5) \\ \hline
+12 & & B & @SAVE & 38 & B' & ?(0,?) & 38 & B' & 15,44(0,5) \\ \hline
 13 & @TRUE & LA & @R3,1 & 42 & LA' & ?,1(0,0) & 42 & LA' & 3,1(0,0) \\ \hline
 14 & @SAVE & STH & @R3,C & 46 & STH' & ?,?(0,?) & 46 & STH' & 3,56(0,5) \\ \hline
 15 & & BCR & 15,@RVIX & 50 & BCR' & 15,? & 50 & BCR' & 15,14 \\ \hline
@@ -213,15 +258,79 @@ C        DS    H                Reserve halfword
 19 & @FIVE & DC & PL1'5' & 60 & & Память для @FIVE=5 & 60 & & Память для @FIVE=5 \\ \hline
 20 & & DS & 0F & 64 & & Выравнивание & 64 & & Выравнивание \\ \hline
 21 & @BUF & DC & PL8'0' & 64 & & Память для @BUF=0 & 64 & & Память для @BUF=0 \\ \hline
-22 & @RBASE & EQU & 5 & 5 & & & 5 & & \\ \hline
-23 & @R1 & EQU & 6 & 6 & & & 6 & & \\ \hline
-24 & @R2 & EQU & 2 & 2 & & & 2 & & \\ \hline
-25 & @R3 & EQU & 3 & 3 & & & 3 & & \\ \hline
-26 & @RVIX & EQU & 14 & 14 & & & 14 & & \\ \hline
+22 & @RBASE & EQU & 5 & 72 & & & 72 & & \\ \hline
+23 & @R1 & EQU & 6 & 72 & & & 72 & & \\ \hline
+24 & @R2 & EQU & 2 & 72 & & & 72 & & \\ \hline
+25 & @R3 & EQU & 3 & 72 & & & 72 & & \\ \hline
+26 & @RVIX & EQU & 14 & 72 & & & 72 & & \\ \hline
 27 & & END & & 72 & & & 72 & & \\ \hline
 \end{longtable}
 \normalsize
 \end{landscape}
+
+\section{Пакет объектных карт для личного задания}
+
+По аналогии с примером из рекомендаций объектный эквивалент ассемблеровского текста варианта № 11 оформляется как пакет карт \texttt{ESD}, \texttt{TXT} и \texttt{END}. Длина программного блока равна \texttt{0x48}: последняя область \texttt{@BUF} начинается с адреса \texttt{0x40} и занимает 8 байт. При формировании адресных частей команд учитывается, что после \texttt{BALR @RBASE,0} базовый регистр содержит адрес \texttt{0x02}; поэтому смещения операндов, адресуемых через \texttt{@RBASE}, вычисляются как относительный адрес метки минус \texttt{0x02}.
+
+\begin{center}
+\texttt{******************** Начало пакета объектных карт ***********************}
+\end{center}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcommand{\objcardeight}[8]{%
+\noindent\begin{tabular}{|C{0.055\textwidth}|C{0.115\textwidth}|C{0.055\textwidth}|C{0.075\textwidth}|C{0.055\textwidth}|C{0.075\textwidth}|C{0.095\textwidth}|C{0.34\textwidth}|}
+\hline
+#1 & #2 & #3 & #4 & #5 & #6 & #7 & #8 \\
+\hline
+}
+\newcommand{\objcardvalues}[8]{%
+#1 & #2 & #3 & #4 & #5 & #6 & #7 & #8 \\
+\hline
+\end{tabular}\par\vspace{0.35em}
+}
+\newcommand{\esdcard}[5]{%
+\objcardeight{\texttt{-----}}{\textbf{Тип~карты}}{\texttt{-----}}{\texttt{-----}}{\textbf{Имя}}{\textbf{Тип~им.}}{\textbf{Отн.~адрес}}{\textbf{Длина}}
+\objcardvalues{\texttt{-----}}{\texttt{'ESD'}}{\texttt{-----}}{\texttt{-----}}{\texttt{#1}}{#2}{#3}{#4}
+}
+\newcommand{\txtcard}[3]{%
+\objcardeight{\texttt{-----}}{\textbf{Тип~карты}}{\texttt{-----}}{\textbf{адр}}{\texttt{-----}}{\textbf{дл}}{\texttt{-----}}{\textbf{Фрагмент двоичного кода}}
+\objcardvalues{\texttt{-----}}{\texttt{'TXT'}}{\texttt{-----}}{#1}{\texttt{-----}}{#2}{\texttt{-----}}{\texttt{#3}}
+}
+\newcommand{\objendcard}{%
+\objcardeight{\texttt{-----}}{\textbf{Тип~карты}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}
+\objcardvalues{\texttt{-----}}{\texttt{'END'}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}{\texttt{-----}}
+}
+
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\esdcard{EX11}{0}{0x00}{0x48}{}
+\txtcard{0x00}{2}{05 50}
+\txtcard{0x02}{6}{F8 72 50 3E 50 34}
+\txtcard{0x08}{6}{FC 70 50 3E 50 3A}
+\txtcard{0x0E}{4}{4F 60 50 3E}
+\txtcard{0x12}{4}{40 60 50 38}
+\txtcard{0x16}{4}{48 20 50 32}
+\txtcard{0x1A}{4}{49 20 50 38}
+\txtcard{0x1E}{4}{47 80 50 28}
+\txtcard{0x22}{4}{41 30 00 00}
+\txtcard{0x26}{4}{47 F0 50 2C}
+\txtcard{0x2A}{4}{41 30 00 01}
+\txtcard{0x2E}{4}{40 30 50 38}
+\txtcard{0x32}{2}{07 FE}
+\txtcard{0x34}{2}{00 03}
+\txtcard{0x36}{3}{00 00 3C}
+\txtcard{0x3A}{2}{XX XX}
+\txtcard{0x3C}{1}{5C}
+\txtcard{0x40}{8}{00 00 00 00 00 00 00 0C}
+\objendcard
+\normalsize
+\setlength{\tabcolsep}{6pt}
+
+\begin{center}
+\texttt{********************* Конец пакета объектных карт ***********************}
+\end{center}
+
+Команда \texttt{B @SAVE} в объектном коде представлена как расширенная мнемоника команды \texttt{BC} с маской \texttt{15}, поэтому для адреса \texttt{0x26} сформированы байты \texttt{47 F0 50 2C}: адрес метки \texttt{@SAVE} равен \texttt{0x2E}, а смещение от базы \texttt{0x02} равно \texttt{0x2C}. Псевдооперация \texttt{DS 0F} не создает самостоятельной \texttt{TXT}-карты, а только выравнивает следующий адрес до границы полного слова; поэтому после байта \texttt{@FIVE} по адресу \texttt{0x3C} следующий размещаемый объект начинается с \texttt{0x40}.
 
 \section{Перечень и пояснения модификаций состава и структуры БД}
 

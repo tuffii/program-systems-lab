@@ -3,13 +3,15 @@
 \contentsline {subsection}{\numberline {1.1}Исходный текст на ЯВУ (вариант № 11)}{2}{}%
 \contentsline {subsection}{\numberline {1.2}Ассемблеровский эквивалент контрольного примера}{2}{}%
 \contentsline {subsection}{\numberline {1.3}Ассемблеровский эквивалент личного задания}{2}{}%
-\contentsline {subsection}{\numberline {1.4}Множество новых языковых конструкций}{3}{}%
-\contentsline {section}{\numberline {2}Постановка задачи модификации программы-макета}{3}{}%
-\contentsline {section}{\numberline {3}Перечень и пояснения модификаций состава и структуры БД}{7}{}%
-\contentsline {subsection}{\numberline {3.1}Таблица машинных операций (TMOP)}{7}{}%
-\contentsline {subsection}{\numberline {3.2}Таблица псевдоопераций (TPOP)}{7}{}%
-\contentsline {section}{\numberline {4}Перечень и пояснения модификаций алгоритма}{7}{}%
-\contentsline {subsection}{\numberline {4.1}Обработка команд формата SS}{7}{}%
-\contentsline {subsection}{\numberline {4.2}Модификация обработчиков псевдоопераций DC и DS}{8}{}%
-\contentsline {subsection}{\numberline {4.3}Обработка команды B и выравнивание}{8}{}%
-\contentsline {section}{\numberline {5}Выводы по результатам работы}{8}{}%
+\contentsline {subsection}{\numberline {1.4}Табличная запись исходного ассемблерного текста с адресами}{3}{}%
+\contentsline {subsection}{\numberline {1.5}Множество новых языковых конструкций}{4}{}%
+\contentsline {section}{\numberline {2}Постановка задачи модификации программы-макета}{4}{}%
+\contentsline {section}{\numberline {3}Пакет объектных карт для личного задания}{8}{}%
+\contentsline {section}{\numberline {4}Перечень и пояснения модификаций состава и структуры БД}{9}{}%
+\contentsline {subsection}{\numberline {4.1}Таблица машинных операций (TMOP)}{9}{}%
+\contentsline {subsection}{\numberline {4.2}Таблица псевдоопераций (TPOP)}{9}{}%
+\contentsline {section}{\numberline {5}Перечень и пояснения модификаций алгоритма}{10}{}%
+\contentsline {subsection}{\numberline {5.1}Обработка команд формата SS}{10}{}%
+\contentsline {subsection}{\numberline {5.2}Модификация обработчиков псевдоопераций DC и DS}{10}{}%
+\contentsline {subsection}{\numberline {5.3}Обработка команды B и выравнивание}{10}{}%
+\contentsline {section}{\numberline {6}Выводы по результатам работы}{10}{}%

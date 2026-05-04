@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026/TeX Live for SUSE Linux) (preloaded format=xelatex 2026.4.26)  28 APR 2026 19:03
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026/TeX Live for SUSE Linux) (preloaded format=xelatex 2026.4.26)  3 MAY 2026 16:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -227,19 +227,29 @@ Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \@lastruleclass=\count307
 \@thisrulewidth=\dimen174
 )
+(/usr/share/texmf/tex/latex/tools/array.sty
+Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
+\col@sep=\dimen175
+\ar@mcellbox=\box58
+\extrarowheight=\dimen176
+\NC@list=\toks20
+\extratabsurround=\skip57
+\backup@length=\skip58
+\ar@cellbox=\box59
+)
 (/usr/share/texmf/tex/latex/listings/listings.sty
 \lst@mode=\count308
-\lst@gtempboxa=\box58
-\lst@token=\toks20
+\lst@gtempboxa=\box60
+\lst@token=\toks21
 \lst@length=\count309
-\lst@currlwidth=\dimen175
+\lst@currlwidth=\dimen177
 \lst@column=\count310
 \lst@pos=\count311
-\lst@lostspace=\dimen176
-\lst@width=\dimen177
+\lst@lostspace=\dimen178
+\lst@width=\dimen179
 \lst@newlines=\count312
 \lst@lineno=\count313
-\lst@maxwidth=\dimen178
+\lst@maxwidth=\dimen180
 
 (/usr/share/texmf/tex/latex/listings/lstpatch.sty
 File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
@@ -248,7 +258,7 @@ File: lstpatch.sty 2025/11/14 1.11b (Carsten Heinz)
 File: lstmisc.sty 2025/11/14 1.11b (Carsten Heinz)
 \c@lstnumber=\count314
 \lst@skipnumbers=\count315
-\lst@framebox=\box59
+\lst@framebox=\box61
 )
 (/usr/share/texmf/tex/latex/listings/listings.cfg
 File: listings.cfg 2025/11/14 1.11b listings configuration
@@ -308,15 +318,15 @@ Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
 (/usr/share/texmf/tex/latex/titlesec/titlesec.sty
 Package: titlesec 2025/01/04 v2.17 Sectioning titles
-\ttl@box=\box60
-\beforetitleunit=\skip57
-\aftertitleunit=\skip58
-\ttl@plus=\dimen179
-\ttl@minus=\dimen180
-\ttl@toksa=\toks21
-\titlewidth=\dimen181
-\titlewidthlast=\dimen182
-\titlewidthfirst=\dimen183
+\ttl@box=\box62
+\beforetitleunit=\skip59
+\aftertitleunit=\skip60
+\ttl@plus=\dimen181
+\ttl@minus=\dimen182
+\ttl@toksa=\toks22
+\titlewidth=\dimen183
+\titlewidthlast=\dimen184
+\titlewidthfirst=\dimen185
 )
 (/usr/share/texmf/tex/latex/setspace/setspace.sty
 Package: setspace 2022/12/04 v6.7b set line spacing
@@ -343,22 +353,22 @@ Package fontspec Info:
  (./report.aux)
 \openout1 = `report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
-LaTeX Font Info:    ... okay on input line 30.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
 
 Package fontspec Info: 
 (fontspec)             Adjusting the maths setup (use [no-math] to avoid
@@ -366,66 +376,66 @@ Package fontspec Info:
 
 \symlegacymaths=\mathgroup4
 LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 30.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 30.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 30.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 30.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 30.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 30.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 30.
-LaTeX Font Info:    Redeclaring math accent \check on input line 30.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 30.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 30.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \colon on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 30.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 30.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 30.
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 31.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 31.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 31.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 31.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 31.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 31.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 31.
+LaTeX Font Info:    Redeclaring math accent \check on input line 31.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 31.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 31.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \colon on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 31.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 31.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 31.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 30.
+(Font)              `operators' in the math version `normal' on input line 31.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  OT1/cmr/m/n --> TU/LiberationSerif(0)/m/n on input line
- 30.
+ 31.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 30.
+(Font)              `operators' in the math version `bold' on input line 31.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  OT1/cmr/bx/n --> TU/LiberationSerif(0)/m/n on input lin
-e 30.
+e 31.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
 (Font)                  TU/LiberationSerif(0)/m/n --> TU/LiberationSerif(0)/m/n
- on input line 30.
+ on input line 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
 (Font)                  OT1/cmr/m/it --> TU/LiberationSerif(0)/m/it on input li
-ne 30.
+ne 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
 (Font)                  OT1/cmr/bx/n --> TU/LiberationSerif(0)/b/n on input lin
-e 30.
+e 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 30.
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
 (Font)                  OT1/cmtt/m/n --> TU/LiberationMono(0)/m/n on input line
- 30.
+ 31.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
 (Font)                  TU/LiberationSerif(0)/m/n --> TU/LiberationSerif(0)/b/n
- on input line 30.
+ on input line 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
 (Font)                  OT1/cmr/bx/it --> TU/LiberationSerif(0)/b/it on input l
-ine 30.
+ine 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 30.
+(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 31.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
 (Font)                  OT1/cmtt/m/n --> TU/LiberationMono(0)/b/n on input line
- 30.
+ 31.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -485,7 +495,7 @@ File: lstlang2.sty 2025/11/14 1.11b listings language file
 File: lstlang3.sty 2025/11/14 1.11b listings language file
 )
 LaTeX Font Info:    Font shape `TU/LiberationMono(0)/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 81.
+(Font)              scaled to size 10.79993pt on input line 82.
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -528,13 +538,13 @@ Space,Scale=0.9,Script=Cyrillic].
 (fontspec)             Mono/BI/OT:script=cyrl;language=dflt;"
 
 LaTeX Font Info:    Font shape `TU/LiberationMono(1)/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 81.
+(Font)              scaled to size 10.79993pt on input line 82.
 LaTeX Font Info:    Font shape `TU/LiberationMono(1)/m/n' will be
-(Font)              scaled to size 9.85492pt on input line 81.
-LaTeX Font Info:    Font shape `TU/LiberationMono(1)/b/n' will be
 (Font)              scaled to size 9.85492pt on input line 82.
+LaTeX Font Info:    Font shape `TU/LiberationMono(1)/b/n' will be
+(Font)              scaled to size 9.85492pt on input line 83.
 LaTeX Font Info:    Font shape `TU/LiberationMono(1)/m/n' will be
-(Font)              scaled to size 12.81142pt on input line 86.
+(Font)              scaled to size 12.81142pt on input line 87.
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -552,6 +562,13 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
  [2]
+Overfull \hbox (75.33047pt too wide) in paragraph at lines 145--146
+\TU/LiberationSerif(1)/m/n/12 указан относительный адрес размещения команды, об
+ласти данных или псевдооперации в шестнадцатеричном
+ []
+
+
+ignored: Infinite glue shrinkage found in box being split [3]
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -561,7 +578,7 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (13.75093pt too wide) in paragraph at lines 144--145
+Overfull \hbox (13.75093pt too wide) in paragraph at lines 189--190
 []\TU/LiberationSerif(1)/m/n/12 При сравнении \TU/LiberationMono(1)/m/n/12 exam
 ppl.ass \TU/LiberationSerif(1)/m/n/12 и \TU/LiberationMono(1)/m/n/12 ex11.ass \
 TU/LiberationSerif(1)/m/n/12 выявлены следующие новые языковые конструкции,
@@ -644,12 +661,12 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (13.78946pt too wide) in paragraph at lines 158--159
+Overfull \hbox (13.78946pt too wide) in paragraph at lines 203--204
 \TU/LiberationSerif(1)/m/n/12 необходимо модифицировать программу-макет компиля
 тора с АССЕМБЛЕРА. Выбранный способ
  []
 
-[3]
+[4]
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -663,7 +680,7 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (19.47446pt too wide) in paragraph at lines 163--164
+Overfull \hbox (19.47446pt too wide) in paragraph at lines 208--209
 \TU/LiberationSerif(1)/m/n/12 обработки (\TU/LiberationMono(1)/m/n/12 FSS \TU/L
 iberationSerif(1)/m/n/12 и \TU/LiberationMono(1)/m/n/12 SSS\TU/LiberationSerif(
 1)/m/n/12 ), которые будут парсить операнды с указанием длины \TU/LiberationMon
@@ -679,7 +696,7 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (29.67041pt too wide) in paragraph at lines 164--165
+Overfull \hbox (29.67041pt too wide) in paragraph at lines 209--210
 []\TU/LiberationSerif(1)/m/n/12 Расширение блока обработки команд типа RX для п
 оддержки мнемоники \TU/LiberationMono(1)/m/n/12 B \TU/LiberationSerif(1)/m/n/12
  (транслируется
@@ -705,10 +722,951 @@ Package fontspec Info:
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
 
-[4] [5
+[5] [6
 
-] [6]
-Overfull \hbox (30.98964pt too wide) in paragraph at lines 228--229
+] [7]
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Overfull \hbox (37.42574pt too wide) in paragraph at lines 273--274
+\TU/LiberationSerif(1)/m/n/12 адрес \TU/LiberationMono(1)/m/n/12 0x02\TU/Libera
+tionSerif(1)/m/n/12 ; поэтому смещения операндов, адресуемых через \TU/Liberati
+onMono(1)/m/n/12 @RBASE\TU/LiberationSerif(1)/m/n/12 , вычисляются как относите
+льный
+ []
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 306.
+LaTeX Font Info:    Font shape `TU/LiberationMono(0)/m/n' will be
+(Font)              scaled to size 7.19995pt on input line 306.
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+LaTeX Font Info:    Font shape `TU/LiberationMono(1)/m/n' will be
+(Font)              scaled to size 7.19995pt on input line 306.
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+[8
+
+]
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Package fontspec Info: 
+(fontspec)             Liberation Mono scale = 0.9.
+
+
+Overfull \hbox (0.5196pt too wide) in paragraph at lines 333--334
+\TU/LiberationSerif(1)/m/n/12 самостоятельной \TU/LiberationMono(1)/m/n/12 TXT\
+TU/LiberationSerif(1)/m/n/12 -карты, а только выравнивает следующий адрес до гр
+аницы полного слова;
+ []
+
+
+Overfull \hbox (30.98964pt too wide) in paragraph at lines 337--338
 []\TU/LiberationSerif(1)/m/n/12 В основу функционирования макета компилятора с 
 Ассемблера положен алгоритм, использующий
  []
@@ -718,7 +1676,7 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (8.3863pt too wide) in paragraph at lines 231--232
+Overfull \hbox (8.3863pt too wide) in paragraph at lines 340--341
 []\TU/LiberationSerif(1)/m/n/12 В таблицу \TU/LiberationMono(1)/m/n/12 TMOP \TU
 /LiberationSerif(1)/m/n/12 добавляются новые строки для поддержки команд формат
 ов RX и SS. Таблица
@@ -772,6 +1730,7 @@ Package fontspec Info:
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
 
+[9]
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -785,7 +1744,7 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (41.55278pt too wide) in paragraph at lines 252--253
+Overfull \hbox (41.55278pt too wide) in paragraph at lines 361--362
 []\TU/LiberationSerif(1)/m/n/12 Создаются новые функции \TU/LiberationMono(1)/m
 /n/12 FSS \TU/LiberationSerif(1)/m/n/12 и \TU/LiberationMono(1)/m/n/12 SSS \TU/
 LiberationSerif(1)/m/n/12 для разбора операндов команд формата SS: \TU/Liberati
@@ -809,21 +1768,18 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (8.41077pt too wide) in paragraph at lines 255--256
+Overfull \hbox (8.41077pt too wide) in paragraph at lines 364--365
 \TU/LiberationSerif(1)/m/n/12 таблице символов \TU/LiberationMono(1)/m/n/12 TSY
 M\TU/LiberationSerif(1)/m/n/12 , вычисляет смещения относительно базового регис
 тра и формирует
  []
 
 
-Overfull \hbox (15.10487pt too wide) in paragraph at lines 255--256
+Overfull \hbox (15.10487pt too wide) in paragraph at lines 364--365
 \TU/LiberationSerif(1)/m/n/12 6-байтовый машинный код (КОП + Длина1/Длина2 + Ба
 за1/Смещение1 + База2/Смещение2). 
  []
 
-[7
-
-]
 
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
@@ -841,21 +1797,21 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (21.22943pt too wide) in paragraph at lines 260--261
+Overfull \hbox (21.22943pt too wide) in paragraph at lines 369--370
 []\TU/LiberationSerif(1)/b/n/12 FDC / SDC: \TU/LiberationSerif(1)/m/n/12 Добавл
 яется распознавание типа \TU/LiberationMono(1)/m/n/12 H \TU/LiberationSerif(1)/
 m/n/12 (Halfword). Значение константы преобразуется
  []
 
 
-Overfull \hbox (3.67964pt too wide) in paragraph at lines 260--261
+Overfull \hbox (3.67964pt too wide) in paragraph at lines 369--370
 \TU/LiberationSerif(1)/m/n/12 в 2-байтовое двоичное представление. Добавляется 
 распознавание типа \TU/LiberationMono(1)/m/n/12 P \TU/LiberationSerif(1)/m/n/12
  (Packed Decimal)
  []
 
 
-Overfull \hbox (11.08362pt too wide) in paragraph at lines 260--261
+Overfull \hbox (11.08362pt too wide) in paragraph at lines 369--370
 \TU/LiberationSerif(1)/m/n/12 с модификатором длины \TU/LiberationMono(1)/m/n/1
 2 L \TU/LiberationSerif(1)/m/n/12 (например, \TU/LiberationMono(1)/m/n/12 PL3\T
 U/LiberationSerif(1)/m/n/12 ). Значение константы переводится в упакованный
@@ -870,14 +1826,14 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (17.85443pt too wide) in paragraph at lines 261--262
+Overfull \hbox (17.85443pt too wide) in paragraph at lines 370--371
 []\TU/LiberationSerif(1)/b/n/12 FDS / SDS: \TU/LiberationSerif(1)/m/n/12 Добавл
 яется распознавание типа \TU/LiberationMono(1)/m/n/12 H \TU/LiberationSerif(1)/
 m/n/12 (увеличение счетчика адреса на 2) и поддержка
  []
 
 
-Overfull \hbox (12.58838pt too wide) in paragraph at lines 261--262
+Overfull \hbox (12.58838pt too wide) in paragraph at lines 370--371
 \TU/LiberationMono(1)/m/n/12 0F \TU/LiberationSerif(1)/m/n/12 (выравнивание сче
 тчика адреса на границу полного слова без выделения дополнительной
  []
@@ -911,19 +1867,19 @@ Package fontspec Info:
 (fontspec)             Liberation Mono scale = 0.9.
 
 
-Overfull \hbox (12.06776pt too wide) in paragraph at lines 276--277
+Overfull \hbox (12.06776pt too wide) in paragraph at lines 385--386
 []\TU/LiberationSerif(1)/m/n/12 Структурированность программы-макета (наличие т
 аблиц TMOP, TPOP и отдельных блоков
  []
 
-
-Overfull \hbox (11.7123pt too wide) in paragraph at lines 277--278
+[10]
+Overfull \hbox (11.7123pt too wide) in paragraph at lines 386--387
 []\TU/LiberationSerif(1)/m/n/12 Большинство новых команд (CVB, STH, LH, CH, BC,
  LA) относятся к уже поддерживаемому
  []
 
 
-Overfull \hbox (25.4086pt too wide) in paragraph at lines 282--283
+Overfull \hbox (25.4086pt too wide) in paragraph at lines 391--392
 \TU/LiberationSerif(1)/m/n/12 операндов с длинами, что усложняет лексический и 
 синтаксический анализ строки ассемблера. 
  []
@@ -932,25 +1888,25 @@ Overfull \hbox (25.4086pt too wide) in paragraph at lines 282--283
 Package fontspec Info: 
 (fontspec)             Liberation Mono scale = 0.9.
 
-[8]
-Overfull \hbox (45.17422pt too wide) in paragraph at lines 287--289
+
+Overfull \hbox (45.17422pt too wide) in paragraph at lines 396--398
 []\TU/LiberationSerif(1)/b/n/12 Общая оценка: \TU/LiberationSerif(1)/m/n/12 Пос
 тавленная задача декомпозирована, определены конкретные точки модификации
  []
 
-[9] (./report.aux)
+[11] (./report.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 7792 strings out of 469337
- 177084 string characters out of 5459333
- 1010340 words of memory out of 5000000
- 36335 multiletter control sequences out of 15000+600000
- 630945 words of font info for 110 fonts, out of 8000000 for 9000
+ 7891 strings out of 469337
+ 178859 string characters out of 5459333
+ 1011836 words of memory out of 5000000
+ 36422 multiletter control sequences out of 15000+600000
+ 631025 words of font info for 120 fonts, out of 8000000 for 9000
  450 hyphenation exceptions out of 8191
- 87i,6n,93p,500b,1769s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 87i,8n,93p,623b,1769s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on report.pdf (10 pages).
+Output written on report.pdf (12 pages).
